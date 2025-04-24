@@ -2,6 +2,7 @@ frappe.ui.form.on('Service DC OUT', {
     supplier: function (frm) {
         
         //// this i s tested purpose 
+        /// from linux pc
         frappe.prompt([
             {
                 label: 'Item Code',
