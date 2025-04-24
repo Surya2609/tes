@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+  <div class="header">
+    <img src="/files/MVD Logo1 (1).jpg" alt="Left Image" class="left-img">
+    <img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">
+    <div class="company-details">
+      <h4>TAX INVOICE</h4>
+
+      <h5><strong>{{doc.company}}</strong></h5>
+
+      {% set company_details = frappe.db.get_value("Company", {"company_name": doc.company},
+      ["custom_address_1st_line", "custom_address_2nd_line", "gstin", "custom_state", "custom_state_code",
+      "phone_no", "email"], as_dict=True) %}
+
+             <h6 class="text-center" style="padding: 0;">Address: {{company_details.custom_address_1st_line}},</h6>
+            <h6>{{company_details.custom_address_2nd_line}}</h6>
+            <h6 class="text-center" style="padding: 0;">Mobile: {{company_details.phone_no}}, Email:
+                {{company_details.email}}</h6>
+            <h6 style="padding: 0;"><strong>GST No: {{ company_details.gstin }}</strong></h6>
+            <h6 style="padding: 3;"><strong>State: {{company_details.custom_state}}, State Code:
+                    {{company_details.custom_state_code}}</strong></h6>
+
+
+    </div>
+  </div>
+
+  <table class="details-table">
+    <tr>
+      <td><h6><strong>Bill To,</strong></h6><h6><strong>{{ doc.supplier }}</strong></h6><h6>{{ doc.address_display }}</h6></td>
+      <td><h6><strong>Place Of Supply:</strong></h6><h6>{{ doc.shipping_address_display }}</h6></td>
+      <td><h6><strong>Invoice NO: {{ doc.name }}</strong></h6>
+        <h6>Invoice Date: {{ doc.posting_date }}</h6>
+        <h6>Due Date: {{ doc.due_date }}</h6>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3"><h6>IRN NO:</h6><h6>Ack No irn Ack Date date</h6></td>
+    </tr>
+  </table>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Sl No.</th>
+        <th>Description of Product</th>
+        <th>HSN Code</th>
+        <th>Qty</th>
+        <th>UOM</th>
+        <th>Rate</th>
+        <th>Discount</th>
+        <th>Tax Rate</th>
+        <th>Tax Amt</th>
+        <th>Total Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in doc.items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.item_code or "N/A" }}<br>{{ item.description }}<br>Batch No: {{ item.batch_no }}</td>
+        <td>{{ item.gst_hsn_code }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ item.uom }}</td>
+        <td>{{ item.rate }}</td>
+        <td>  0%</td>
+        <td>{% if item.igst_rate %}{{ item.igst_rate }}%{% else %}{{ item.cgst_rate + item.sgst_rate }}%{% endif %}</td>
+        <td>{% if item.igst_amount %}{{ item.igst_amount }}{% else %}{{ item.cgst_amount + item.sgst_amount }}{% endif %}</td>
+        <td>{{ item.amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="display: flex; width: 100%;">
+    <div style="flex: 1; margin-right: 20px;">
+      <table class="table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th colspan="2">CGST</th>
+            <th colspan="2">SGST</th>
+            <th colspan="2">IGST</th>
+            <th colspan="2">UGST</th>
+          </tr>
+          <tr>
+            <td>Rate%</td><td>AMT</td><td>Rate%</td><td>AMT</td>
+            <td>Rate%</td><td>AMT</td><td>Rate%</td><td>AMT</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tax in doc.taxes %}
+          <tr>
+            <td>{% if "CGST" in tax.account_head %}{{ tax.rate }}{% endif %}</td>
+            <td>{% if "CGST" in tax.account_head %}{{ tax.tax_amount }}{% endif %}</td>
+            <td>{% if "SGST" in tax.account_head %}{{ tax.rate }}{% endif %}</td>
+            <td>{% if "SGST" in tax.account_head %}{{ tax.tax_amount }}{% endif %}</td>
+            <td>{% if "IGST" in tax.account_head %}{{ tax.rate }}{% endif %}</td>
+            <td>{% if "IGST" in tax.account_head %}{{ tax.tax_amount }}{% endif %}</td>
+            <td>{% if "UGST" in tax.account_head %}{{ tax.rate }}{% endif %}</td>
+            <td>{% if "UGST" in tax.account_head %}{{ tax.tax_amount }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+     <div style="flex: 1; padding: 10px; font-size: 14px;">
+  
+  <div style="display: flex; justify-content: space-between;">
+    <strong>Sub Total</strong>
+    
+     {% if doc.net_total%}
+        {{ doc.net_total }}
+    {% else %}
+        {{ doc.total }}
+    {% endif %}
+    
+    
+  </div>
+
+  <div style="display: flex; justify-content: space-between;">
+    <strong>Cash Discount:</strong>
+    <span style="min-width: 50px; text-align: right;">{{ doc.additional_discount_percentage }}%</span>
+    <span style="min-width: 80px; text-align: right;">{{ doc.discount_amount }}</span>
+  </div>
+
+  <div style="display: flex; justify-content: space-between;">
+    <strong>TDS:</strong>
+    {% for tax in doc.taxes %}
+      {% if "TDS LLP - RFPL" in tax.account_head or "TDS Payable - RFPL" in tax.account_head %}
+        <span style="min-width: 50px; text-align: right;">{{ tax.rate }}%</span>
+        <span style="min-width: 80px; text-align: right;">{{ tax.tax_amount }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div style="display: flex; justify-content: space-between;">
+    <strong>Total Tax:</strong>
+    <span style="text-align: right;">{{ doc.total_taxes_and_charges }}</span>
+  </div>
+
+  <div style="display: flex; justify-content: space-between;">
+    <strong>Shipping Charges:</strong>
+    <span style="text-align: right;">{{ 0 }}</span>
+  </div>
+
+  <div style="display: flex; justify-content: space-between;">
+    <strong>Round off:</strong>
+    <span style="text-align: right;">{{ doc.rounding_adjustment }}</span>
+  </div>
+
+  <hr style="margin: 5px 0;">
+
+  <div style="display: flex; justify-content: space-between; font-weight: bold;">
+    <strong>Grand Total:</strong>
+   <span style="text-align: right;">
+    {% if doc.rounded_total %}
+        {{ doc.rounded_total }}
+    {% else %}
+        {{ doc.grand_total }}
+    {% endif %}
+</span>
+
+  </div>
+
+  <hr style="margin: 5px 0;">
+</div>
+</div>
+
+
+
+
+<div class="footer">
+{% set company_details = frappe.db.get_value("Company", {"company_name": doc.company}, ["custom_bank_name", "custom_branch", "custom_ifsc", "custom_ac_no"], as_dict=True) %}
+
+<p>Total Amount (In Words): <strong>{{ doc.in_words }}</strong></p>
+  <hr>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+    <div style="text-align: left;">
+      <span>Bank Name: {{company_details.custom_bank_name}}</span>
+    </div>
+    <div style="text-align: right;">
+      <span>A/C Number: {{company_details.custom_ac_no}}</span>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+    <div style="text-align: left;">
+      <span>IFSC: {{company_details.custom_ifsc}}</span>
+    </div>
+    <div style="text-align: right;">
+      <span>Branch: {{company_details.custom_branch}}</span>
+    </div>
+  </div>
+    
+    <hr>
+    
+    <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 10px;">
+      <span>For, <strong>{{doc.company}}</strong></span>
+      <br></br>
+      <span>Authorised Signatory</span>
+    </div>
+  </div>
+
+
+</body>
+
+</html>

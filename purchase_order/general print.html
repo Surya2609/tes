@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.0">
+    <title>Purchase Order</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- <style>
+        /* Add custom styles for the header images */
+        .header {
+            position: relative;
+            text-align: center;
+            padding: 0px;
+        }
+
+        .header img {
+            position: absolute;
+            top: 0;
+            max-width: 80px;
+            max-height: 80px;
+        }
+
+        .header .left-img {
+            left: 0;
+        }
+
+        .header .right-img {
+            right: 0;
+        }
+
+        img {
+            width: 80px;
+            margin-top: 80px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+
+        table,
+        th,
+        td {
+            border: 0.5px solid black;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style> -->
+</head>
+
+<body>
+    <!-- Header Section -->
+    <div class="header">
+        <img src="/files/MVD Logo1 (1).jpg " alt="Left Image">
+        <img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">
+        <div class="company-details">
+            <h4>PURCHASE ORDER</h4>
+            <h5><strong>{{doc.company}}</strong></h5>
+
+            {% set company_details = frappe.db.get_value("Company", {"company_name": doc.company},
+            ["custom_address_1st_line", "custom_address_2nd_line", "gstin", "custom_state", "custom_state_code",
+            "phone_no", "email"], as_dict=True) %}
+
+            <h6 class="text-center" style="padding: 0;">Address: {{company_details.custom_address_1st_line}},</h6>
+            <h6>{{company_details.custom_address_2nd_line}}</h6>
+            <h6 class="text-center" style="padding: 0;">Mobile: {{company_details.phone_no}}, Email:
+                {{company_details.email}}</h6>
+            <h6 style="padding: 0;"><strong>GST No: {{ company_details.gstin }}</strong></h6>
+            <h6 style="padding: 3;"><strong>State: {{company_details.custom_state}}, State Code:
+                    {{company_details.custom_state_code}}</strong></h6>
+
+        </div>
+    </div>
+
+    <table class="details-table">
+        <tr>
+            <td class="left">
+                <h6><strong>Supplier Address,</strong></h6>
+                <h6><strong>{{doc.supplier_name}}</strong></h6>
+                <p class="text-justify">
+                <h6>{{ doc.address_display }}</h6>
+                </p>
+            </td>
+            <td class="center">
+                <h6><strong>Place of Supply,</strong></h6>
+                <p class="text-justify">
+                <h6>{{ doc.shipping_address_display }}</h6>
+                </p>
+            </td>
+            <td class="right">
+                <h6><strong>Purchase Details,</strong></h6>
+                <p class="text-left">
+                <h6><strong>PO Number:</strong> {{ doc.name }}</h6>
+                </p>
+                <p class="text-left">
+                <h6><strong>PO Date:</strong> {{ doc.transaction_date}}</h6>
+                </p>
+                <p class="text-left">
+                <h6><strong>Payment Due:</strong> {{ doc.schedule_date}}</h6>
+                </p>
+                <p class="text-left">
+                <h6><strong>Currency:</strong> {{ doc.currency}}</h6>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Items Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="cs-width_6 cs-semi_bold cs-primary_color">Sl No.</th>
+                <th class="cs-width_6 cs-semi_bold cs-primary_color">Items Details</th>
+                <th>Description of Product</th>
+                <th>HSN Code</th>
+                <th>Qty</th>
+                <th>UOM</th>
+                <th>Rate</th>
+                <th>Disc</th>
+                <th>Tax Rate</th>
+                <th>Tax Amt</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in doc.items %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.item_code }}</td>
+                <td>{{ item.item_name }}<br>
+                    <h6>Due Date: {{ doc.schedule_date }}</h6>
+                </td>
+
+                <!-- <td>{{ item.description }}<br> <h6>Due Date:{{doc.schedule_date }}</h6></td> -->
+                <td>{{ item.gst_hsn_code }}</td>
+                <td>{{ item.qty }}</td>
+                <td>{{ item.uom }}</td>
+                <td>{{ item.rate }}</td>
+                <td>{{0 }}</td>
+                <td>
+                    {% if item.igst_rate %}
+                    {{ item.igst_rate }}%
+                    {% else %}
+                    {{ item.cgst_rate + item.sgst_rate }}%
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.igst_amount %}
+                    {{ item.igst_amount }}
+                    {% else %}
+                    {{ item.cgst_amount + item.sgst_amount }}
+                    {% endif %}
+                </td>
+                <td>{{ item.amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="display: flex; width: 100%; align-items: flex-start;">
+        <div style="flex: 1; margin-right: 20px;">
+        </div>
+
+        <!-- Right Side: Summary -->
+        <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Sub Total</strong>
+                <span>{{doc.total}}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Cash Discount:</strong>
+                <span style="text-align: center;">{{doc.additional_discount_percentage}}%</span>
+                <span>{{doc.discount_amount}}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Total Tax</strong>
+
+
+
+
+                {% set total_tax = doc.taxes | selectattr("charge_type", "equalto", "On Net Total") |
+                map(attribute="tax_amount") | sum %}
+                {% set shipping_total = doc.taxes | selectattr("charge_type", "equalto", "Actual") |
+                map(attribute="tax_amount") | sum %}
+
+                <div style="display: flex; justify-content: space-between;">
+                    <span>{{ total_tax }}</span>
+                </div>
+
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Shipping Charges</strong>
+                <span>{{ shipping_total }}</span>
+            </div>
+
+
+
+
+
+
+            <!--<div style="display: flex; justify-content: space-between;">-->
+            <!--  <strong>Shipping Tax</strong>-->
+            <!--  <span style="text-align: center;"></span>-->
+            <!--  {% for tax in doc.taxes %}-->
+            <!--  {% if tax.charge_type == "Actual" %}-->
+            <!--  <span>{{ tax.rate }}</span>-->
+            <!--  {% endif %}-->
+            <!--  {% endfor %}-->
+            <!--</div>-->
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Packing Charges</strong>
+                <span>0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Packing Tax</strong>
+                <span>0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <strong>Round Off</strong>
+                <span>{{doc.rounding_adjustment}}</span>
+            </div>
+            <hr style="margin: 5px 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <strong>Grand Total</strong>
+                <span style="text-align: right;">
+                    {% if doc.rounded_total %}
+                    {{ doc.rounded_total }}
+                    {% else %}
+                    {{ doc.grand_total }}
+                    {% endif %}
+                </span>
+
+            </div>
+            <hr style="margin: 5px 0;">
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p>Total Amount (In Words):<strong> {{ doc.in_words }}</strong></p>
+    </div>
+
+    <!-- Terms Section -->
+    <div class="terms">
+        <h4>Terms and Conditions</h4>
+        <p>{{doc.terms}}</p>
+    </div>
+</body>
+
+</html>

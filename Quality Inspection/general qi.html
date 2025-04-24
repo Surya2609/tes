@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{{ "BATCH" if doc.reference_type == "Purchase Receipt" else "FINAL" }} INSPECTION REPORT - MVD FASTENERS PVT LTD</title>
+<style>
+@page {
+    size: A4 landscape;
+    margin: 4mm;
+}
+body {
+    font-size: 9px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+.header-table, .data-table {
+    width: 100%;
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+.header-table td, .data-table th, .data-table td {
+    border: 1px solid #000;
+    padding: 2px;
+    text-align: center;
+    vertical-align: middle;
+    word-break: break-word;
+}
+.title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+}
+h3 {
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+table th {
+    background-color: #f2f2f2;
+}
+.stamp img {
+    max-width: 100px;
+}
+td[colspan] {
+    white-space: nowrap;
+}
+h3 {
+font-size: 11px; /* reduced from 14px */
+margin-top: 4px; /* reduced spacing */
+margin-bottom: 4px; /* reduced spacing */
+text-align: center;
+font-weight: bold;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header Table -->
+<table class="header-table">
+    <tr>
+    <td rowspan="2" style="width: 20%; text-align: center;">
+        <img src="{{ '/files/MVD Logo1 (1).jpg' if doc.reference_type == 'Purchase Receipt' else '/files/MVD Logo1 (1).jpg' }}" alt="Logo" width="120" height="80">
+    </td>
+    <td class="title">
+        {{"BATCH INSPECTION REPORT" if doc.reference_type == "Purchase Receipt" else "FINAL INSPECTION REPORT" }}
+    </td>
+    <td>
+        <p><strong>Doc No:</strong> {{ "MVD/QAD/F/13" if doc.reference_type == "Purchase Receipt" else "MVD/QA/f/09" }}</p>
+        <p><strong>Rev: 00</strong></p>
+        <p><strong>Date:</strong> 01.04.2023</p>
+    </td>
+    </tr>
+</table>
+
+<!-- Item Details -->
+<table class="data-table">
+    {% if doc.reference_type == "Purchase Receipt" %}
+    <tr>
+    <td><strong>MVD Item Number</strong></td>
+    <td>{{ doc.item_code }}</td>
+    <td class="right-text">Date</td>
+    <td>{{ doc.report_date }}</td>
+    </tr>
+    <tr>
+    <td><strong>Item Name</strong></td>
+    <td>{{ doc.item_name }}</td>
+    <td class="right-text">POR/GRN NO</td>
+    <td>{{ doc.reference_name }}</td>
+    </tr>
+    <tr>
+    <td><strong>Customer Name</strong></td>
+    <td>{{ doc.custom_customer_name }}</td>
+    <td class="right-text">POR/GRN NO (NOS)</td>
+    <td>
+        {% set total_pr_qty = frappe.db.get_value("Purchase Receipt Item", {"parent": doc.reference_name, "item_code": doc.item_code}, "qty") %}
+        {{ total_pr_qty or "None" }}
+    </td>
+    </tr>
+    <tr>
+    <td><strong>Customer Part Code</strong></td>
+    <td>{{ doc.custom_customer_part_code }}</td>
+    <td class="right-text">Sample Size (Nos)</td>
+    <td>{{ doc.sample_size }}</td>
+    </tr>
+    <tr>
+    <td><strong>PO Number</strong></td>
+    <td>None</td>
+    <td class="right-text">Batch No</td>
+    <td>
+        {% set serial_batch_bundle = frappe.db.get_value("Purchase Receipt Item", {"parent": doc.reference_name, "item_code": doc.item_code}, "serial_and_batch_bundle") %}
+        {% if serial_batch_bundle %}
+        {% set batch_no = frappe.db.get_value("Serial and Batch Entry", {"parent": serial_batch_bundle}, "batch_no") %}
+        {{ batch_no or "No Batch Found" }}
+        {% else %}
+        GRN Not Submitted
+        {% endif %}
+    </td>
+    </tr>
+    <tr>
+    <td><strong>Material</strong></td>
+    <td>{{ doc.custom_material or "None" }}</td>
+    <td class="right-text">Quality Doc No and Date</td>
+    <td>{{ doc.name }} and {{ doc.report_date }}</td>
+    </tr>
+    {% else %}
+    <tr>
+    <td><strong>MVD Part Number</strong></td>
+    <td>{{ doc.item_code }}</td>
+    <td class="right-text">Date</td>
+    <td>{{ doc.report_date }}</td>
+    </tr>
+    <tr>
+    <td><strong>Part Name</strong></td>
+    <td>{{ doc.item_name }}</td>
+    <td class="right-text">Invoice No</td>
+    <td>{{ doc.reference_name }}</td>
+    </tr>
+    <tr>
+    <td><strong>Customer Name</strong></td>
+    <td>{{ doc.custom_customer_name }}</td>
+    <td class="right-text">Invoice Qty (Nos)</td>
+    <td>
+        {% set total_qty = frappe.db.get_value("Delivery Note Item", {"parent": doc.reference_name, "item_code": doc.item_code}, "qty") %}
+        {{ total_qty or "None" }}
+    </td>
+    </tr>
+    <tr>
+    <td><strong>Customer Part Code</strong></td>
+    <td>{{ doc.custom_customer_part_code }}</td>
+    <td class="right-text">Sample Size (Nos)</td>
+    <td>{{ doc.sample_size }}</td>
+    </tr>
+    <tr>
+    <td><strong>PO Number</strong></td>
+    <td>
+        {% set so_no = frappe.db.get_value("Delivery Note Item", {"parent": doc.reference_name, "item_code": doc.item_code}, "against_sales_order") %}
+        {% if so_no %}
+        {% set cust_po_no = frappe.db.get_value("Sales Order", {"name": so_no}, "po_no") %}
+        {{ cust_po_no or "None" }}
+        {% else %}
+        None
+        {% endif %}
+    </td>
+    <td rowspan="2" class="right-text">Batch No</td>
+    <td rowspan="2">{{ doc.batch_no }}</td>
+    </tr>
+    <tr>
+    <td><strong>Material</strong></td>
+    <td>{{ doc.custom_material or "None" }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<table class="data-table">
+    <tr>
+      <td colspan="14" style="
+        text-align: center;
+        font-weight: bold;
+        background: #f2f2f2;
+        border-top: none;
+        border-bottom: none;
+        border-left: 1px solid #000;
+        border-right: 1px solid #000;
+      ">
+        DIMENSIONAL REPORT AS PER SAMPLE SIZE QTY - Sampling Plan Standard Reference: ISO: 3269:2019 Fasteners
+      </td>
+    </tr>
+  </table>
+  
+
+<table class="data-table">
+    <thead>
+    <tr>
+        <td rowspan="2">Sl No</td>
+        <td rowspan="2">Description</td>
+        <td colspan="3">Specification</td>
+        <td rowspan="2">Method of Inspection</td>
+        <td colspan="7">STANDARD</td>
+        <td rowspan="2">Accept / Reject</td>
+    </tr>
+    <tr>
+        <td>Nominal</td>
+        <td>Min</td>
+        <td>Max</td>
+        <td>Sample 1</td>
+        <td>Sample 2</td>
+        <td>Sample 3</td>
+        <td>Sample 4</td>
+        <td>Sample 5</td>
+        <td>Min</td>
+        <td>Max</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in doc.readings %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.specification }}</td>
+        {% if item.specification and "THREAD" in item.specification.upper() %}
+        <td colspan="3">M{{ item.value }}</td>
+        <td>{{ item.parameter_group }}</td>
+        <td colspan="7">GO & NO GO GAUGE FOUND OK</td>
+        <td>{{ item.status }}</td>
+        {% elif item.specification and ("APPEARANCE" in item.specification.upper() or "SURFACE FINISH" in item.specification.upper()) %}
+        <td colspan="3">{{ item.value }}</td>
+        <td>{{ item.parameter_group }}</td>
+        <td colspan="5">{% if item.status and item.status.lower() == "accepted" %}OK{% else %}NOT OK{% endif %}</td>
+        <td>--</td><td>--</td>
+        <td>{{ item.status }}</td>
+        {% else %}
+        {% if item.min_value == 0 and item.max_value == 0 %}
+            <td colspan="3">{{ item.value }}</td>
+        {% else %}
+            <td>{{ item.value }}</td>
+            <td>{{ item.min_value }}</td>
+            <td>{{ item.max_value }}</td>
+        {% endif %}
+               
+<td>{{ item.parameter_group }}</td>
+<td>{{ item.reading_1 }}</td>
+<td>{{ item.reading_2 }}</td>
+<td>{{ item.reading_3 }}</td>
+<td>{{ item.reading_4 }}</td>
+<td>{{ item.reading_5 }}</td>
+<td>{{ item.custom_reading_max or 0}}</td>
+<td>{{ item.custom_reading_min or 0}}</td>
+<td>{{ item.status }}</td>
+        
+        {% endif %}
+    </tr>
+    {% endfor %}
+
+    <tr>
+        <td colspan="2"><strong>Disposition Status</strong></td>
+        <td colspan="12">{{ doc.status }}</td>
+    </tr>
+    
+    <tr>
+        <td colspan="2"><strong>NOTE</strong></td>
+        <td colspan="12">1. All Dimensions are in MM.</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="13">2. Component Inspected as per sampling plan Doc No: MVD/F/QA/01</td>
+    </tr>
+    
+    <tr>
+        <td colspan="6">Prepared by: {{ doc.custom_inspector_name }}</td>
+        <td colspan="2" style="text-align: center;">
+            <img src="{{ '/files/stamp_qi.jpg' }}" alt="Stamp" width="40" height="18">
+        </td>
+        <td colspan="6">Approved By: {{ doc.verified_by }}</td>
+    </tr>
+    
+    <tr>
+        <td colspan="14" style="text-align: center; font-weight: bold;">
+            Content will come here...
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</div>
+</body>
+</html>

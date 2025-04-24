@@ -1,0 +1,36 @@
+table th, table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #005f73;
+}
+th:first-child {
+    width: 200px;
+}
+.attendance-cell {
+    padding: 4px;
+    border: 1px solid #ddd;
+    margin: 6px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    text-align: center;
+    min-width: 170px;   /* Increased width */
+    height: 130px;      /* Increased height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;    /* Reduced font size */
+}
+
+td {
+    vertical-align: top;
+    padding: 8px;
+}

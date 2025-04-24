@@ -1,0 +1,27 @@
+<h3>Quality Inspection</h3>
+
+<div class="row">
+    <div class="col-md-3 text-right">Inspection ID</div>
+    <div class="col-md-9">{{ doc.name }}</div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 text-right">Item Name</div>
+    <div class="col-md-9">
+        {% set item_name = frappe.db.get_value("Item", doc.item_code, "item_name") %}
+        {{ item_name or "Not Found" }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 text-right">Purchase Receipt</div>
+    <div class="col-md-9">{{ doc.reference_name or "Not Available" }}</div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 text-right">Batch No</div>
+    <div class="col-md-9">
+        {% set batch_no = frappe.db.get_value("Purchase Receipt Item", {"parent": doc.reference_name, "item_code": doc.item_code}, "serial_and_batch_bundle") %}
+        {{ batch_no or "No Batch Found" }}
+    </div>
+</div>
