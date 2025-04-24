@@ -1,6 +1,7 @@
 frappe.ui.form.on('Service DC OUT', {
     supplier: function (frm) {
-        // Show a dialog to select item and warehouse
+        
+        //// this i s tested purpose 
         frappe.prompt([
             {
                 label: 'Item Code',
