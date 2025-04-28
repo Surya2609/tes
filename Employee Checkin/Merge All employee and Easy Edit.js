@@ -3,6 +3,76 @@ frappe.listview_settings['Employee Checkin'] = {
         // Remove old buttons to prevent duplication
         $('.custom-merge-btn').remove();
         $('.custom-edit-btn').remove(); // Remove old Edit button
+        $('.custom-filter-btn').remove(); // Remove old Filter button
+        $('.custom-filter2-btn').remove(); // Remove old Filter button
+
+
+
+        // Declare global variables for from_date and to_date
+        let from_date, to_date;
+
+        // Remove old date filter elements (prevent duplication)
+        $('#from_date_input').remove();
+        $('#to_date_input').remove();
+        $('#apply_date_filter_btn').remove();
+        $('#apply_date_filter_cancel_btn').remove(); // Remove old Filter button
+
+        // Add container for date filter inputs and button
+        $('<div id="date_filter_container" style="display: flex; flex-direction: column; gap: 8px;">')
+            .prependTo(listview.page.page_form);
+
+        // Add From Date input
+        $(`<input type="date" id="from_date_input" class="form-control" placeholder="From Date" style="width: 150px;">`)
+            .appendTo('#date_filter_container')
+            .on('change', function () {
+                from_date = $(this).val(); // Store the From Date when changed
+                updateDateFilterDisplay();
+            });
+
+        // Add To Date input
+        $(`<input type="date" id="to_date_input" class="form-control" placeholder="To Date" style="width: 150px;">`)
+            .appendTo('#date_filter_container')
+            .on('change', function () {
+                to_date = $(this).val(); // Store the To Date when changed
+                updateDateFilterDisplay();
+            });
+
+        // Add Apply button
+        $(`<button class="btn btn-sm btn-secondary" id="apply_date_filter_btn" style="padding: 4px 8px; font-size: 12px;">
+    Apply
+</button>`)
+            .appendTo('#date_filter_container')
+            .click(() => {
+                if (!from_date || !to_date) {
+                    frappe.msgprint('Please select both From and To dates.');
+                    return;
+                }
+
+                listview.filter_area.remove('custom_date_in');
+
+                // Apply the filter
+                listview.filter_area.add([[
+                    'Employee Checkin',
+                    'custom_date_in',
+                    'between',
+                    [from_date, to_date]
+                ]]);
+
+                // Optionally display the selected dates
+                frappe.msgprint(__('Date filter applied from ' + from_date + ' to ' + to_date));
+            });
+
+
+        function updateDateFilterDisplay() {
+            // If both dates are selected, show the current date filter
+            if (from_date && to_date) {
+                const filterText = `From Date: ${from_date} To Date: ${to_date}`;
+                $('#date_filter_text').text(filterText); // Update the displayed text
+            } else {
+                $('#date_filter_text').text('No date filter applied.'); // Display default text when no dates are selected
+            }
+        }
+
 
         // Add the Merge button
         let mergeButton = listview.page.add_button(__('Merge'), function () {
@@ -26,7 +96,7 @@ frappe.listview_settings['Employee Checkin'] = {
                 method: "get_employees_without_checkin",
                 args: { date_filter: date_filter },
                 callback: function (response) {
-                    console.log("res message",response.message);
+                    console.log("res message", response.message);
                     if (response.message && Array.isArray(response.message)) {
                         console.log(response.message);
                         if (response.message.length > 0) {
@@ -66,6 +136,96 @@ frappe.listview_settings['Employee Checkin'] = {
         }, 'Actions');
 
         editButton.addClass('custom-edit-btn');
+
+
+        ///////    ABSENT AND HALF DAY FILTER
+        let filterButton1 = listview.page.add_button(__('AB/HALF'), function () {
+            const existingFilters = listview.filter_area.get();
+
+            const hasAb_Half_Filter = existingFilters.some(f =>
+                f[1] === 'log_type' &&
+                f[2] === 'in' &&
+                JSON.stringify(f[3]) === JSON.stringify([
+                    '-/-',
+                    'IN/-'
+                ])
+            );
+
+            const hasP_Half_Filter = existingFilters.some(f =>
+                f[1] === 'log_type' &&
+                f[2] === 'in' &&
+                JSON.stringify(f[3]) === JSON.stringify([
+                    'IN/OUT',
+                    'IN/-'
+                ])
+            );
+
+            if (hasP_Half_Filter) {
+                listview.filter_area.remove('log_type');
+            }
+
+            if (hasAb_Half_Filter) {
+                // Remove only that specific filter
+                listview.filter_area.remove('log_type');
+            } else {
+                // Apply the filter
+                listview.filter_area.add([[
+                    'Employee Checkin',
+                    'log_type',
+                    'in',
+                    ['-/-', 'IN/-']
+                ]]);
+            }
+
+        }, 'Actions');
+        filterButton1.addClass('custom-filter-btn');
+
+
+
+        ///////    PRESENT AND HALF DAY FILTER
+        let filterButton2 = listview.page.add_button(__('P/HALF'), function () {
+            const existingFilters = listview.filter_area.get();
+
+            const hasP_Half_Filter = existingFilters.some(f =>
+                f[1] === 'log_type' &&
+                f[2] === 'in' &&
+                JSON.stringify(f[3]) === JSON.stringify([
+                    'IN/OUT',
+                    'IN/-'
+                ])
+            );
+
+
+            const hasAb_Half_Filter = existingFilters.some(f =>
+                f[1] === 'log_type' &&
+                f[2] === 'in' &&
+                JSON.stringify(f[3]) === JSON.stringify([
+                    '-/-',
+                    'IN/-'
+                ])
+            );
+
+            if (hasAb_Half_Filter) {
+                listview.filter_area.remove('log_type');
+            }
+
+            if (hasP_Half_Filter) {
+                // Remove only that specific filter
+                listview.filter_area.remove('log_type');
+            } else {
+                // Apply the filter
+                listview.filter_area.add([[
+                    'Employee Checkin',
+                    'log_type',
+                    'in',
+                    ['IN/OUT', 'IN/-']
+                ]]);
+            }
+
+        }, 'Actions');
+        filterButton2.addClass('custom-filter2-btn');
+
+
     }
 };
 

@@ -33,8 +33,7 @@ frappe.ui.form.on('Purchase Order', {
                                 }
                             });
                             updateHistory(frm, item, 0);
-                        } else {
-                            
+                        } else {                            
                             console.log("Found existing price:", price.name);
                             let lastPrice = parseFloat(price.price_list_rate);
                             if (lastPrice !== parseFloat(item.custom_unit_rate)) {

@@ -64,6 +64,7 @@ function addChildTable(frm, result_list) {
                     console.log("pendig qty", pendingQty);
 
                     let child = frm.add_child("custom_unique_items");
+                    child.custom_id = generateRandomID(); // 🔥 Random unique ID
                     child.item = row.item_code;
                     child.uom = row.uom;
                     child.picked_qty = row.qty;
@@ -80,3 +81,12 @@ function addChildTable(frm, result_list) {
     });
 }
 
+
+function generateRandomID(length = 10) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
