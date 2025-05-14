@@ -1,86 +1,110 @@
 frappe.ui.form.on('Pick List', {
     refresh: function (frm) {
-        let unique_items = {};
-
-        frm.doc.locations.forEach(item => {
-            let code = item.item_code;
-
-            if (unique_items[code]) {
-                unique_items[code].qty += flt(item.qty);
-
-                // Handle batch_no as comma-separated string
-                if (item.batch_no && !unique_items[code].batch_nos.split(', ').includes(item.batch_no)) {
-                    unique_items[code].batch_nos += `, ${item.batch_no}`;
-                }
-
-                // Handle warehouse the same way
-                if (item.warehouse && !unique_items[code].warehouses.split(', ').includes(item.warehouse)) {
-                    unique_items[code].warehouses += `, ${item.warehouse}`;
-                }
-
-            } else {
-                console.log("itm uom", item.uom);
-                unique_items[code] = {
-                    item_code: item.item_code,
-                    uom: item.uom,
-                    qty: flt(item.qty),
-                    batch_nos: item.batch_no || '',
-                    warehouses: item.warehouse || '',
-                    so_name: item.sales_order || ''
-                };
-            }
+        frm.add_custom_button("test", function () {
+            getLocationQty("MV7500POCHM612S", "73D2 - MVDF");
         });
+    },
 
-        let result_list = Object.values(unique_items);
-
-        addChildTable(frm, result_list);
-        console.log("Final List:", result_list);
+    validate: async function (frm) {
+        await generateUniqueItems(frm); // wait for API calls
     }
 });
+
+
+async function generateUniqueItems(frm) {
+    let unique_items = {};
+
+    for (const item of frm.doc.locations) {
+        const code = item.item_code;
+
+        if (unique_items[code]) {
+
+            const qty = await getLocationQty(code, item.warehouse); // dynamically use item code and warehouse
+
+            unique_items[code].stockQty += parseFloat(qty[0].actual_qty) || 0;
+
+            unique_items[code].qty += parseFloat(item.qty) || 0;
+
+            if (item.batch_no && !unique_items[code].batch_nos.split(', ').includes(item.batch_no)) {
+                unique_items[code].batch_nos += `, ${item.batch_no}`;
+            }
+
+            if (item.warehouse && !unique_items[code].warehouses.split(', ').includes(item.warehouse)) {
+                unique_items[code].warehouses += `, ${item.warehouse}`;
+            }
+
+        } else {
+            const qty = await getLocationQty(code, item.warehouse); // dynamically use item code and warehouse
+            let stockUom = "--";
+
+            if (qty.length == 1) {
+                stockUom = qty[0].stock_uom;
+            }
+
+            console.log("length", qty.length);
+            console.log("st qty", qty[0].actual_qty);
+            console.log("st uom", qty[0].stock_uom);
+
+            unique_items[code] = {
+                item_code: item.item_code,
+                item_name: item.item_name,
+                uom: item.uom,
+                qty: parseFloat(item.qty) || 0,
+                batch_nos: item.batch_no || '',
+                warehouses: item.warehouse || '',
+                so_name: item.sales_order || '',
+                stock_qty: parseFloat(qty[0].actual_qty) || 0,
+                stock_uom: stockUom || ""
+            };
+        }
+    }
+
+    const result_list = Object.values(unique_items);
+    await addChildTable(frm, result_list); // Wait for child table update
+}
+
 
 function addChildTable(frm, result_list) {
     frm.clear_table("custom_unique_items");
 
-    if (result_list.length === 0) return;
+    if (result_list.length === 0) return Promise.resolve();
 
     const promises = result_list.map((row) => {
-        if (row.so_name) {
-            return frappe.db.get_list('Sales Order Item', {
-                filters: {
-                    parent: row.so_name,
-                    item_code: row.item_code
-                },
-                fields: ['item_code', 'qty', 'parent'],
-                limit_page_length: 1
-            }).then((result) => {
+        if (!row.so_name) return Promise.resolve();
+        
+        return frappe.call({
+            method: 'get_so_item_details', // update path
+            args: {
+                parent: row.so_name,
+                item_code: row.item_code
+            }
+        }).then((r) => {
+            const result = r.message;
+            if (result && result.length > 0) {
+                console.log("result", result);
+                let soQty = parseFloat(result[0].qty) || 0;
+                let picked_qty = parseFloat(row.qty) || 0;
+                let pendingQty = soQty - picked_qty;
 
-                if (result && result.length > 0) {
-                    let soQty = parseFloat(result[0].qty) || 0;
-                    let picked_qty = parseFloat(row.qty) || 0;
-                    let pendingQty = soQty - picked_qty;
-
-                    console.log("so qty", soQty);
-                    console.log("picked qty", picked_qty);
-                    console.log("pendig qty", pendingQty);
-
-                    let child = frm.add_child("custom_unique_items");
-                    child.custom_id = generateRandomID(); // 🔥 Random unique ID
-                    child.item = row.item_code;
-                    child.uom = row.uom;
-                    child.picked_qty = row.qty;
-                    child.pending_qty = pendingQty;
-                    child.warehouse = row.warehouses;
-                    child.batch_no = row.batch_nos;
-                }
-            });
-        }
+                let child = frm.add_child("custom_unique_items");
+                child.custom_id = generateRandomID();
+                child.item = row.item_code;
+                child.item_name = row.item_name;
+                child.uom = row.uom;
+                child.picked_qty = picked_qty;
+                child.pending_qty = pendingQty;
+                child.warehouse = row.warehouses;
+                child.batch_no = row.batch_nos;
+                child.stock_qty = row.stock_qty;
+                child.stock_uom = row.stock_uom;
+            }
+        });
     });
 
-    Promise.all(promises).then(() => {
+    return Promise.all(promises).then(() => {
         frm.refresh_field("custom_unique_items");
     });
 }
-
 
 function generateRandomID(length = 10) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -89,4 +113,27 @@ function generateRandomID(length = 10) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+}
+
+
+
+async function getLocationQty(item, location) {
+    console.log("itm", item);
+    console.log("lcn", location);
+    try {
+        const response = await frappe.call({
+            method: "get_total_location_qty",
+            args: {
+                item_code: item,
+                location: location
+            }
+        });
+
+        console.log("res message", response.message);
+        return response.message;  // You can use this value where you call the function
+
+    } catch (error) {
+        console.error("Error fetching location qty:", error);
+        return null;
+    }
 }

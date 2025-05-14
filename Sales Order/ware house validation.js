@@ -1,7 +1,7 @@
 frappe.ui.form.on('Sales Order Item', {
     warehouse: function (frm, cdt, cdn) {
         console.log("warehse", frm.doc.default_warehouse);
-        const invalid_warehouses = ["Work In Progress - MFPLD", "Rejected Item - MFPLD"];
+        const invalid_warehouses = ["Work In Progress - MVDF", "Rejected Items - MVDF"];
         let row = frappe.get_doc(cdt, cdn);
 
         if (invalid_warehouses.includes(row.warehouse)) {
@@ -26,7 +26,7 @@ frappe.ui.form.on('Sales Order Item', {
 
 frappe.ui.form.on('Sales Order', {
     set_warehouse: function (frm) {
-        const invalid_warehouses = ["Work In Progress - MFPLD", "Rejected Item - MFPLD"];
+        const invalid_warehouses = ["Work In Progress - MVDF", "Rejected Items - MVDF"];
 
         if (invalid_warehouses.includes(frm.doc.set_warehouse)) {
             frappe.msgprint({

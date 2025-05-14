@@ -19,7 +19,7 @@ function apply_series_filter(frm) {
 
         let series_map = {
             "REVURU FASTENERS PVT LTD": "MR-RF-.YY.-",
-            "MVD FASTENERS PRIVATE LIMITED": "MR-MV-25-26-"
+            "MVD FASTENERS PRIVATE LIMITED": "MR/MV/25-26-"
         };
 
         if (series_map[company]) {

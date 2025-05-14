@@ -14,6 +14,7 @@ frappe.ui.form.on('Sales Order Item', {
                     if (r.message) {
                         let data = r.message;  // Assign response to 'data'
                         console.log("--", data);  // Debugging output
+                        dn_dialogue_fetch(item, data, frm);
                         // You can also update other fields or show messages
                         // dn_dialogue_fetch(item, data, frm);  // Show the rates in the dialog
                     }
@@ -103,7 +104,7 @@ function dn_dialogue_fetch(item, data, frm) {
 `;
 
     // Append the custom footer to the dialog
-    dn_dialogue.$wrapper.find('.frappe-control[data-fieldname="rates"]').append(customFooter);
+    // dn_dialogue.$wrapper.find('.frappe-control[data-fieldname="rates"]').append(customFooter);
 
     // Add event listeners for left buttons
     dn_dialogue.$wrapper.find('.so-history-btn').on('click', function () {

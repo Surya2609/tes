@@ -25,13 +25,13 @@ frappe.ui.form.on('Purchase Receipt', {
             console.log("Selected Company:", company);
 
             let series_map_qar_item = {
-                "REVURU FASTENERS PVT LTD": "QR-RF-.YY.-",
-                "MVD FASTENERS PRIVATE LIMITED": "QR-MV-.YY.-"
+                "REVURU FASTENERS PVT LTD": "QR-RF-25-26-",
+                "MVD FASTENERS PRIVATE LIMITED": "QR/MV/25-26-"
             };
 
             let series_map_rej_itm = {
                 "REVURU FASTENERS PVT LTD": "RJ-RF-.YY.-",
-                "MVD FASTENERS PRIVATE LIMITED": "RJ-MV-.YY.-"
+                "MVD FASTENERS PRIVATE LIMITED": "RJ/MV/25-26-"
             };
 
 

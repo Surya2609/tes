@@ -71,7 +71,6 @@ frappe.ui.form.on("Quality Inspection", {
     },
 });
 
-
 function getDefaultCompanyWarehouses(user) {
     return new Promise((resolve, reject) => {
         frappe.call({

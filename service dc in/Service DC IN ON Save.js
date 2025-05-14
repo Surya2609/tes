@@ -21,7 +21,7 @@ frappe.ui.form.on('Service DC IN', {
 
                         let series_map = {
                             "REVURU FASTENERS PVT LTD": "PI-RF-.YY.-",
-                            "MVD FASTENERS PRIVATE LIMITED": "PI-MV-25-26-"
+                            "MVD FASTENERS PRIVATE LIMITED": "PI/MV/25-26-"
                         };
 
                         var new_doc = frappe.model.get_new_doc("Purchase Invoice");
@@ -93,36 +93,62 @@ function add_purchase_invoice(frm) {
         qty: row.total_qty,
     }));
 
-    frappe.call({
-        method: "frappe.client.insert",
-        args: {
-            doc: {
-                doctype: "Purchase Invoice",
-                supplier: frm.doc.supplier,
-                items: items
-            }
+
+    frappe.db.get_list('Employee', {
+        filters: {
+            user_id: frappe.session.user
         },
-        callback: function (response) {
-            if (response.message) {
-                frappe.call({
-                    method: "frappe.client.submit",
-                    args: {
-                        doc: response.message
-                    },
-                    callback: function (submit_response) {
-                        if (submit_response.message) {
-                            frappe.msgprint(__('Purchase Invoice submitted successfully: ' + submit_response.message.name));
-                            get_submited_st_entry(frm, submit_response.message.name);
-                        } else {
-                            frappe.msgprint(__('Failed to submit the Purchase Invoice.'));
+        fields: ['company'],
+        limit_page_length: 1
+    }).then((result) => {
+
+
+        console.log("itms", items);
+
+        console.log("res", result);
+        company = result[0].company;
+
+        let series_map = {
+            "REVURU FASTENERS PVT LTD": "PI-RF-.YY.-",
+            "MVD FASTENERS PRIVATE LIMITED": "PI/MV/25-26-",
+            "REVURU PRECISION LLP": "PI-RPL-25-26-"
+        };
+
+        frappe.call({
+            method: "frappe.client.insert",
+            args: {
+                doc: {
+                    doctype: "Purchase Invoice",
+                    naming_series: series_map[company],
+                    supplier: frm.doc.supplier,
+                    items: items
+                }
+            },
+            callback: function (response) {
+                if (response.message) {
+                    frappe.call({
+                        method: "frappe.client.submit",
+                        args: {
+                            doc: response.message
+                        },
+                        callback: function (submit_response) {
+                            if (submit_response.message) {
+                                frappe.msgprint(__('Purchase Invoice submitted successfully: ' + submit_response.message.name));
+                                get_submited_st_entry(frm, submit_response.message.name);
+                            } else {
+                                frappe.msgprint(__('Failed to submit the Purchase Invoice.'));
+                            }
                         }
-                    }
-                });
-            } else {
-                frappe.msgprint(__('Failed to create Purchase Invoice.'));
+                    });
+                } else {
+                    frappe.msgprint(__('Failed to create Purchase Invoice.'));
+                }
             }
-        }
-    });
+        });
+
+    })
+
+   
 }
 
 function validation(frm) {
@@ -240,7 +266,7 @@ function stock_transfer_in(frm) {
                             ? item.rejected_warehouse
                             : (frm.doc.rejected_warehouse !== null && frm.doc.rejected_warehouse !== undefined
                                 ? frm.doc.rejected_warehouse
-                                : "Rejected Item - MFPLD")
+                                : "Rejected Items - MVDF")
                     });
                 }
             } else {
@@ -277,8 +303,9 @@ function stock_transfer_in(frm) {
             company = result[0].company;
 
             let series_map = {
-                "REVURU FASTENERS PVT LTD": "RF-ODC/25-26/",
-                "MVD FASTENERS PRIVATE LIMITED": "MV-ODC/25-26/"
+                "REVURU FASTENERS PVT LTD": "RF-ST-25-26-",
+                "MVD FASTENERS PRIVATE LIMITED": "MV/ST/25-26-",
+                "REVURU PRECISION LLP": "RPL-ST-25-26-"
             };
 
             frappe.call({
@@ -427,7 +454,7 @@ function calculation_part(row_item, transfer_qty, new_stock_tr_id, stock_entred_
 
     console.log("warehouse", stock_entred_warehouse);
 
-    if (stock_entred_warehouse == "Rejected Item - MFPLD") {
+    if (stock_entred_warehouse == "Rejected Items - MVDF") {
         console.log("invoked to rj qty");
         console.log("row_item", row_item);
         let rejected = givenQty + (parseFloat(row_item.total_rejected) || 0);

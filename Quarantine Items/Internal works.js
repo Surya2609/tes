@@ -375,7 +375,7 @@ function stock_in(frm, entered_qty, quarentine_warehouse, target_warehouse, is_u
 
         let series_map = {
             "REVURU FASTENERS PVT LTD": "RF-ST-.FY.-",
-            "MVD FASTENERS PRIVATE LIMITED": "MV-ST-.FY.-"
+            "MVD FASTENERS PRIVATE LIMITED": "MV/ST/25-26-"
         };
 
         if (series_map[company]) {
@@ -455,7 +455,7 @@ async function move_to_reject_frm(frm) {
 
             let series_map_rej_itm = {
                 "REVURU FASTENERS PVT LTD": "RJ-RF-25-26-",
-                "MVD FASTENERS PRIVATE LIMITED": "RJ-MV-25-26-"
+                "MVD FASTENERS PRIVATE LIMITED": "RJ/MV/25-26-"
             };
 
             if (series_map_rej_itm[company]) {

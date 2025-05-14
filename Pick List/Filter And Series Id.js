@@ -20,11 +20,11 @@ function apply_series_filter_and_warehouse(frm) {
 
         let series_map = {
             "REVURU FASTENERS PVT LTD": "PL-RF-.YY.-",
-            "MVD FASTENERS PRIVATE LIMITED": "PL-MV-25-26-"
+            "MVD FASTENERS PRIVATE LIMITED": "PL/MV/25-26-"
         };
 
         if(company == "MVD FASTENERS PRIVATE LIMITED"){
-            frm.set_value("parent_warehouse", "All Warehouses - MFPL");
+            frm.set_value("parent_warehouse", "All Warehouses - MVDF");
         }else{
             frm.set_value("parent_warehouse", "All Warehouses - RFPL");
         }

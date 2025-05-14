@@ -56,20 +56,16 @@ function apply_series_filter(frm) {
 
         let series_map = {
             "REVURU FASTENERS PVT LTD": "SO-RF-.YY.-",
-            "MVD FASTENERS PRIVATE LIMITED": "SO-MV-25-26-"
+            "MVD FASTENERS PRIVATE LIMITED": "SO/MV/25-26-"
         };
 
         if (series_map[company]) {
             frm.set_value("naming_series", series_map[company]);
             frm.set_value("company", company);
         }
-
-
-
         if (company) {
             set_priceList(frm, company);
         }
-
     });
 }
 

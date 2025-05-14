@@ -1,16 +1,26 @@
 frappe.ui.form.on('Service DC OUT', {
     refresh: function (frm) {
-        frm.add_custom_button("Test", function () {
-            frappe.db.get_list('Employee', {
-                filters: {
-                    user_id: frappe.session.user
-                },
-                fields: ['company'],
-                limit_page_length: 1
-            }).then((result) => {
-                console.log("res", result);
-            });
-        })
+        
+        frm.add_custom_button("Test adc", function () {
+          create_stock_entry(frm);
+        });
+        
+        
+          if (frm.is_new() && !frm.doc.date) {
+            frm.set_value('date', frappe.datetime.get_today());
+        }
+        
+        // frm.add_custom_button("Test", function () {
+        //     frappe.db.get_list('Employee', {
+        //         filters: {
+        //             user_id: frappe.session.user
+        //         },
+        //         fields: ['company'],
+        //         limit_page_length: 1
+        //     }).then((result) => {
+        //         console.log("res", result);
+        //     });
+        // })
     },
 
     validate: function (frm) {
@@ -27,13 +37,13 @@ frappe.ui.form.on('Service DC OUT', {
         }
     },
 
-    after_save: function (frm) {
-        create_stock_entry(frm);
-    }
-
-    // on_submit: function (frm) {
+    // after_save: function (frm) {
     //     create_stock_entry(frm);
     // }
+
+    before_submit: function (frm) {
+        create_stock_entry(frm);
+    }
 });
 
 function create_stock_entry(frm) {
@@ -56,13 +66,15 @@ function create_stock_entry(frm) {
             return;
         }
 
+
         if (company) {
             let id = "";
             console.log("Selected Company:", company);
 
             let series_map = {
-                "REVURU FASTENERS PVT LTD": "RF-ST-25-26-",
-                "MVD FASTENERS PRIVATE LIMITED": "MV-ST-.FY.-"
+                "REVURU FASTENERS PVT LTD": "RF-ST-.FY.-",
+                "MVD FASTENERS PRIVATE LIMITED": "MV/ST/25-26-",
+                "REVURU PRECISION LLP": "RPL-ST-25-26-"
             };
 
             if (series_map[company]) {
@@ -83,6 +95,7 @@ function create_stock_entry(frm) {
                     }
                 },
                 callback: function (response) {
+                    console.log("going to stock entery submit");
                     if (response.message) {
                         frappe.call({
                             method: "frappe.client.submit",
@@ -90,6 +103,7 @@ function create_stock_entry(frm) {
                                 doc: response.message
                             },
                             callback: function (submit_response) {
+                                console.log("submit_response", submit_response.message);
                                 if (submit_response.message) {
                                     frappe.msgprint(__('Stock Entry submitted successfully: ' + submit_response.message.name));
                                     set_batch_no(frm, submit_response.message.name);
@@ -109,6 +123,7 @@ function create_stock_entry(frm) {
 }
 
 function set_batch_no(frm, name) {
+    console.log("invoke1", name);
     frappe.call({
         method: "get_submited_stock_entry",
         args: {
@@ -125,7 +140,8 @@ function set_batch_no(frm, name) {
 
                     // Iterate over the response items to find all matching items
                     get_response.message.forEach(function (item) {
-                        if (item.item_code === row.item && item.qty == row.qty) {                        
+                        if (item.item_code === row.item && item.qty == row.qty) {
+                            // Set the batch number for the matching item
                             frappe.model.set_value(row.doctype, row.name, "batch_no", item.batch_no);
                             frappe.model.set_value(row.doctype, row.name, "transfer_qty", item.transfer_qty);
                             frappe.model.set_value(row.doctype, row.name, "default_uom", item.stock_uom);
@@ -142,7 +158,6 @@ function set_batch_no(frm, name) {
                                 service_for: row.server_for,
                                 source_warehouse: row.target_warehouse
                             });
-
                         }
                     });
                 });
@@ -172,7 +187,8 @@ function insert_dc_in(frm, items) {
 
         let series_map = {
             "REVURU FASTENERS PVT LTD": "RF-IDC/25-26/",
-            "MVD FASTENERS PRIVATE LIMITED": "MV-IDC/25-26/"
+             "MVD FASTENERS PRIVATE LIMITED": "MV/IDC/25-26-",
+            "REVURU PRECISION LLP": "RP-IDC/25-26/"
         };
 
         if (series_map[company]) {

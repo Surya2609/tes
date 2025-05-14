@@ -1,7 +1,7 @@
 frappe.ui.form.on('Sales Invoice Item', {
     warehouse: function (frm, cdt, cdn) {
         console.log("warehse", frm.doc.default_warehouse);
-        const invalid_warehouses = ["Work In Progress - MFPLD", "Rejected Item - MFPLD", "Work In Progress - RFPL", "Rejected Item - RFPL"];       
+        const invalid_warehouses = ["Work In Progress - MVDF", "Rejected Items - MVDF", "Work In Progress - RFPL", "Rejected Item - RFPL"];       
         let row = frappe.get_doc(cdt, cdn);
         if (invalid_warehouses.includes(row.warehouse)) {
             frappe.msgprint({

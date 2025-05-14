@@ -12,7 +12,7 @@ SELECT
     COALESCE(b.actual_qty, 0) AS stock_in_warehouse,
     (SELECT SUM(actual_qty) 
      FROM `tabBin` 
-     WHERE item_code = i.item_code) AS total_stock
+     WHERE item_code = i.item_code) AS  
 FROM 
     `tabItem` i
 LEFT JOIN 

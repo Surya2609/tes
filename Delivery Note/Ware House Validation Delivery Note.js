@@ -1,7 +1,7 @@
 frappe.ui.form.on('Delivery Note Item', {
     warehouse: function (frm, cdt, cdn) {
         console.log("warehse", frm.doc.default_warehouse);
-        const invalid_warehouses = ["Work In Progress - MFPLD", "Rejected Item - MFPLD", "Work In Progress - RFPL", "Rejected Item - RFPL"];
+        const invalid_warehouses = ["Work In Progress - MVDF", "Rejected Items - MVDF", "Work In Progress - RFPL", "Rejected Item - RFPL"];
         let row = frappe.get_doc(cdt, cdn);
 
         if (invalid_warehouses.includes(row.warehouse)) {
@@ -25,7 +25,7 @@ frappe.ui.form.on('Delivery Note Item', {
 
 frappe.ui.form.on('Delivery Note', {
     set_warehouse: function (frm) {
-        const invalid_warehouses = ["Work In Progress - MFPLD", "Rejected Item - MFPLD", "Work In Progress - RFPL", "Rejected Item - RFPL"];
+        const invalid_warehouses = ["Work In Progress - MVDF", "Rejected Items - MVDF", "Work In Progress - RFPL", "Rejected Item - RFPL"];
 
         if (invalid_warehouses.includes(frm.doc.set_warehouse)) {
             frappe.msgprint({

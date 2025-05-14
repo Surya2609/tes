@@ -20,7 +20,7 @@
 
             let series_map = {
                 "REVURU FASTENERS PVT LTD": "PI-RF-.YY.-",
-                "MVD FASTENERS PRIVATE LIMITED": "PI-MV-25-26-"
+                "MVD FASTENERS PRIVATE LIMITED": "PI/MV/25-26-"
             };
 
             if (series_map[company]) {

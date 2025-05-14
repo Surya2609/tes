@@ -182,7 +182,7 @@ frappe.ui.form.on('Sales Invoice', {
     
                        <div class="invoice-row">
     <p><b>Invoice NO.:</b> ${frm.doc.name || '--'}</p>
-    <p><b>Invoice Date:</b> ${frm.doc.posting_date || '--'}</p>
+    <p><b>Date:</b> ${frm.doc.posting_date || '--'}</p>
 </div>
                         <p><b>Qty:</b> ${remainder_qty} ${item.uom || '--'}</p>
                     </div>

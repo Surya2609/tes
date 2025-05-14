@@ -1,4 +1,11 @@
 frappe.ui.form.on('Quality Inspection', {
+    items_add: function (frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        console.log("✅ New item added:", row);
+        
+        // Example: Set a default value
+        frappe.model.set_value(cdt, cdn, 'some_field', 'Default Value');
+    },
     onload: function (frm) {
         console.log("ic",frm.doc.item_code);
         if(frm.doc.item_code && frm.doc.readings?.length){

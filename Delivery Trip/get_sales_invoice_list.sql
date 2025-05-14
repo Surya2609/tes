@@ -1,9 +1,10 @@
 company = frappe.form_dict.get('company')
 
 value = frappe.db.sql("""
-SELECT 
+SELECT  
     si.name, 
     si.customer, 
+    si.customer_name,
     si.customer_address,
     si.customer_group, 
     si.contact_email,

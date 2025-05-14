@@ -186,7 +186,7 @@ function return_purchase_receipt(frm, pr_item_name) {
 
                             let series_map = {
                                 "REVURU FASTENERS PVT LTD": "PR-RF-.YY.-",
-                                "MVD FASTENERS PRIVATE LIMITED": "PR-MV-25-26-"
+                                "MVD FASTENERS PRIVATE LIMITED": "PR/MV/25-26-"
                             };
 
                             if (series_map[company]) {

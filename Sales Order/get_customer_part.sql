@@ -1,40 +1,41 @@
-item_code = frappe.form_dict.get('item_code')  # Item Code from the request
-customer = frappe.form_dict.get('customer')  # Customer from the request
-customer_part_code = frappe.form_dict.get('customer_part_code')  # Customer Part Code from the request
+item_code = frappe.form_dict.get('item_code')
+customer = frappe.form_dict.get('customer')
+customer_part_code = frappe.form_dict.get('customer_part_code')
 
-if item_code:
+value = []
+
+if item_code and customer:
     # Query when Item Code is provided
     value = frappe.db.sql("""
-    SELECT 
-        icd.ref_code, 
-        icd.customer_name,
-        icd.custom_description, 
-        i.item_name,
-        t.*
-    FROM `tabItem Customer Detail` icd
-    JOIN `tabItem` i ON icd.parent = i.name
-    LEFT JOIN `tabItem Tax` t ON t.parent = i.name
-    WHERE 
-        i.name = %s
-        AND icd.customer_name = %s
+        SELECT 
+            cm.customer_part_code, 
+            cc.customer,
+            cc.customer_description,
+            cm.item,
+            i.item_name
+        FROM `tabCustomer Part Mapping` cm
+        JOIN `tabCustomer Mapping Child` cc ON cc.parent = cm.name
+        JOIN `tabItem` i ON i.name = cm.item
+        WHERE 
+            cm.item = %s
+            AND cc.customer = %s
     """, (item_code, customer), as_dict=1)
-else:
+
+elif customer_part_code and customer:
     # Query when Customer Part Code is provided
     value = frappe.db.sql("""
-    SELECT 
-        icd.ref_code, 
-        icd.customer_name,
-        icd.custom_description, 
-        i.name AS item_code, 
-        i.item_name,
-        t.*
-    FROM `tabItem Customer Detail` icd
-    JOIN `tabItem` i ON icd.parent = i.name
-    LEFT JOIN `tabItem Tax` t ON t.parent = i.name
-    WHERE 
-        icd.ref_code = %s
-        AND icd.customer_name = %s
+        SELECT 
+            cm.customer_part_code, 
+            cc.customer,
+            cc.customer_description,
+            cm.item,
+            i.item_name
+        FROM `tabCustomer Part Mapping` cm
+        JOIN `tabCustomer Mapping Child` cc ON cc.parent = cm.name
+        JOIN `tabItem` i ON i.name = cm.item
+        WHERE 
+            cm.customer_part_code = %s
+            AND cc.customer = %s
     """, (customer_part_code, customer), as_dict=1)
 
-# Set the response
 frappe.response['message'] = value
