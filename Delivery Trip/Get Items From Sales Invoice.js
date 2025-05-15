@@ -1,24 +1,21 @@
 frappe.ui.form.on('Delivery Trip', {
-refresh: function(frm) {
+    refresh: function (frm) {
         if (frm.doc.docstatus === 0) {
             frm.add_custom_button('Get Items from Sales Invoice', () => {
-                // if (frm.doc.company) {
-                    frappe.call({
-                        method: 'get_sales_invoice_list',
-                        args: { company: frm.doc.company },
-                        callback: function (r) {
-                            console.log("ms", r.message);
-                            if (r.message) {
-                                let data = r.message;
-                                console.log("--", data);
-                                open_dialogue(data, frm);
-                            }
+                frappe.call({
+                    method: 'get_sales_invoice_list',
+                    args: { company: frm.doc.company },
+                    callback: function (r) {
+                        if (r.message) {
+                            let data = r.message;
+                            open_dialogue(data, frm);
                         }
-                    });
-                // }            
-            }
-        )}},
-        
+                    }
+                });
+            });
+        }
+    },
+
     custom_get_items_from_sales_invoice: function (frm, cdt, cdn) {
         if (frm.doc.company) {
             frappe.call({
@@ -27,7 +24,6 @@ refresh: function(frm) {
                 callback: function (r) {
                     if (r.message) {
                         let data = r.message;
-                        console.log("--", data);
                         open_dialogue(data, frm);
                     }
                 }
@@ -37,6 +33,8 @@ refresh: function(frm) {
 });
 
 function open_dialogue(data, frm) {
+    let currentFilteredData = data; // ✅ Needed for OK button to work
+    let selectedRows = [];
 
     let fields = [
         {
@@ -71,8 +69,6 @@ function open_dialogue(data, frm) {
         size: 'extra-large',
         fields: fields,
     });
-
-    let selectedRows = [];
 
     function renderTable(filteredData) {
         const tableHTML = `
@@ -122,7 +118,7 @@ function open_dialogue(data, frm) {
 
         dn_dialogue.$wrapper.find('.ok-btn').off('click').on('click', function () {
             if (selectedRows.length > 0) {
-                let selectedData = selectedRows.map(rowIndex => data[rowIndex]);
+                let selectedData = selectedRows.map(rowIndex => currentFilteredData[rowIndex]);
 
                 selectedData.forEach((record) => {
                     let emptyRow = frm.doc.delivery_stops.find(row => !row.delivery_note && !row.custom_sales_invoice);
@@ -146,15 +142,15 @@ function open_dialogue(data, frm) {
         const invoiceFilter = dn_dialogue.get_value('invoice_name_filter');
         const customerFilter = dn_dialogue.get_value('customer_filter');
 
-        const filteredData = data.filter(record => {
+        currentFilteredData = data.filter(record => {
             const nameMatch = invoiceFilter ? record.name === invoiceFilter : true;
             const customerMatch = customerFilter ? record.customer === customerFilter : true;
             return nameMatch && customerMatch;
         });
 
-        renderTable(filteredData);
+        renderTable(currentFilteredData);
         renderFooter();
-        attachRowEvents(filteredData);
+        attachRowEvents(currentFilteredData);
     }
 
     // Initial render
@@ -162,7 +158,7 @@ function open_dialogue(data, frm) {
     renderFooter();
     attachRowEvents(data);
 
-    // Set filter onchange listeners
+    // Apply filter on change
     dn_dialogue.fields_dict.invoice_name_filter.df.onchange = applyFilter;
     dn_dialogue.fields_dict.customer_filter.df.onchange = applyFilter;
 
@@ -170,10 +166,16 @@ function open_dialogue(data, frm) {
 }
 
 function updateDeliveryStopRow(row, record) {
-    let name = 'delivery_note';
-    record.name.startsWith('DN-') ? name = name : name = 'custom_sales_invoice';
+    let name = record.name.startsWith('DN-') ? 'delivery_note' : 'custom_sales_invoice';
     frappe.model.set_value(row.doctype, row.name, name, record.name || '');
     frappe.model.set_value(row.doctype, row.name, 'custom_total_qty', record.total_qty || '');
     frappe.model.set_value(row.doctype, row.name, 'customer', record.customer || '');
+
+    if (record.custom_invoice_shipping_address) {
+        frappe.model.set_value(row.doctype, row.name, 'custom_invoice_shipping_address', record.custom_invoice_shipping_address || '');
+    } else {
+        frappe.model.set_value(row.doctype, row.name, 'custom_invoice_shipping_address', record.shipping_address || '');
+    }
+
     frappe.model.set_value(row.doctype, row.name, 'custom_document_date', record.posting_date || '');
 }
