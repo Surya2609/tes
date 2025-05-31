@@ -1,0 +1,70 @@
+<!-- Fixed header -->
+<!DOCTYPE html>
+<html lang="en">
+
+
+<div class="fixed-header">
+  <img src="/files/COC header.png" class="header-img" />
+</div>
+
+<!-- Fixed footer -->
+<div class="fixed-footer">
+  <img src="/files/footer 1.png" class="footer-img" />
+</div>
+
+<!-- Main content -->
+<div class="content">
+  <div class="title">CERTIFICATE OF CONFORMANCE</div>
+
+  <table class="info-table">
+    <tr>
+      <td><strong>Invoice No:</strong> {{ doc.name }}</td>
+      <td><strong>Report Date:</strong> {{ frappe.utils.formatdate(doc.posting_date) }}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>Customer Name:</strong> {{ doc.customer_name }}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>Customer Address:</strong> {{ doc.address_display }}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>Subject:</strong> COC TEST CERTIFICATE</td>
+    </tr>
+  </table>
+
+  <p><strong>MVD FASTENERS PVT. LTD.</strong> certifies that the below part name/number, supplied on order, complies with requirements of the drawings/as per respective TDS standards.</p>
+
+  <p><strong>ROHS COMPLIANCE:</strong> 2015/863/EU</p>
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>SL NO</th>
+        <th>Part Description</th>
+        <th>PO / SO No.</th>
+        <th>Quality Check No.</th>
+        <th>QTY (In Nos)</th>
+        <th>QR Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in doc.custom_si_unique_items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>
+          <b>{{ row.item or ""}}</b><br>
+          {{ row.item_name or ""}}<br>
+          <b>Batch No:</b> {{ row.batch_no or "" }}
+        </td>
+        <td>{{ row.sales_order or row.po_no or "" }}</td>
+        <td>{{ row.quality_check_no or "" }}</td>
+        <td>{{ row.picked_qty or ""}}</td>
+        <td>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data={{ row.item_code }}" width="60" height="60">
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</html>

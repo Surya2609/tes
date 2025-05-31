@@ -2,7 +2,7 @@ frappe.ui.form.on('Service DC IN', {
     refresh: function (frm) {
 
 
-   if (frm.is_new() && !frm.doc.date) {
+        if (frm.is_new() && !frm.doc.date) {
             frm.set_value('date', frappe.datetime.get_today());
         }
 
@@ -25,7 +25,7 @@ frappe.ui.form.on('Service DC IN', {
                         };
 
                         var new_doc = frappe.model.get_new_doc("Purchase Invoice");
-                        
+
                         new_doc.company = company;
                         new_doc.naming_series = series_map[company];
                         new_doc.supplier = frm.doc.supplier;
@@ -42,7 +42,6 @@ frappe.ui.form.on('Service DC IN', {
                         frappe.set_route("Form", "Purchase Invoice", new_doc.name);
 
                     })
-
 
                 });
             });
@@ -113,7 +112,7 @@ function add_purchase_invoice(frm) {
             "MVD FASTENERS PRIVATE LIMITED": "PI/MV/25-26-",
             "REVURU PRECISION LLP": "PI-RPL-25-26-"
         };
-
+        console.log("id", series_map[company]);
         frappe.call({
             method: "frappe.client.insert",
             args: {
@@ -148,8 +147,9 @@ function add_purchase_invoice(frm) {
 
     })
 
-   
+
 }
+
 
 function validation(frm) {
     return new Promise((resolve, reject) => {
@@ -179,6 +179,7 @@ function validation(frm) {
                     });
                     allValid = false;
                 }
+                
             });
 
             // If no exceeded items, proceed directly
@@ -280,8 +281,6 @@ function stock_transfer_in(frm) {
                     });
                 }
             }
-
-
         });
 
         if (items.length === 0) {
@@ -303,11 +302,11 @@ function stock_transfer_in(frm) {
             company = result[0].company;
 
             let series_map = {
-                "REVURU FASTENERS PVT LTD": "RF-ST-25-26-",
+                "REVURU FASTENERS PVT LTD": "RF-ST-.FY.-",
                 "MVD FASTENERS PRIVATE LIMITED": "MV/ST/25-26-",
                 "REVURU PRECISION LLP": "RPL-ST-25-26-"
             };
-
+            console.log("stk id", series_map[company]);
             frappe.call({
                 method: "frappe.client.insert",
                 args: {

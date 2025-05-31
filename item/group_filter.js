@@ -11,6 +11,9 @@ frappe.ui.form.on('Item', {
                 if (r.message && r.message.length > 0) {
                     filteredNames = r.message.map(item => item.name);
                 }
+
+
+
                 frm.set_query('custom_sub_group_1', function () {
                     if (filteredNames.length > 0) {
                         return {
@@ -26,7 +29,7 @@ frappe.ui.form.on('Item', {
                             ]
                         };
                     }
-                });
+                });                
             }
         });
         if (frm.doc.custom_parent_group) {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Dispatch Details</title>
-  <style>
+    <style>
         * {
             box-sizing: border-box;
         }
@@ -58,12 +58,11 @@
         table.data-table th {
             background-color: #f0f0f0;
         }
-        
 
-table.data-table td:nth-child(8) {
-    width: 120px; /* Increase or decrease as needed */
-    height: 120px; /* Increase or decrease as needed */
-}
+        table.data-table td:nth-child(8) {
+            width: 120px;
+            height: 120px;
+        }
 
         @media print {
             .no-print {
@@ -71,9 +70,6 @@ table.data-table td:nth-child(8) {
             }
         }
     </style>
-
-
-
 </head>
 
 <body>
@@ -82,29 +78,37 @@ table.data-table td:nth-child(8) {
         <div class="title-row">Dispatch Details</div>
 
         <div class="info-row">
-            <div class="info-label"><strong>Dispatch Id</strong>: {{doc.name}}</div>
-
+            <div class="info-label"><strong>Dispatch Id</strong>: {{ doc.name }}</div>
             {% if doc.custom_transport_type == "Vehicle" %}
-            <div class="info-label"><strong>Vehicle Number</strong>: {{doc.vehicle}}</div>
+                <div class="info-label"><strong>Vehicle Number</strong>: {{ doc.vehicle }}</div>
             {% else %}
-             <div class="info-label"><strong>Transporter GST</strong>: {{doc.custom_transport_gst}}</div>
-            {%endif%}
-
+                <div class="info-label"><strong>Transporter GST</strong>: {{ doc.custom_transport_gst }}</div>
+            {% endif %}
         </div>
 
         <div class="info-row">
-            <div class="info-label"><strong>Dispatch Date</strong>: {{doc.departure_time}}</div>
-
+            <div class="info-label"><strong>Dispatch Date</strong>: {{ doc.departure_time }}</div>
             {% if doc.custom_transport_type == "Vehicle" %}
-            <div class="info-label"><strong>Driver Name</strong>: {{doc.driver_name}}</div>
+                <div class="info-label"><strong>Driver Name</strong>: {{ doc.driver_name }}</div>
             {% else %}
-            <div class="info-label"><strong>Transporter</strong>: {{doc.custom_transporter}}</div>           
-            {%endif%}
+                <div class="info-label"><strong>Transporter</strong>: {{ doc.custom_contact_details }}</div>
+            {% endif %}
         </div>
 
         <div class="info-row">
-            <div class="info-label"><strong>Total Box</strong>: {{doc.custom_total_boxes}}</div>
-            <div class="info-label"><strong>Phone No</strong>: {{doc.custom_phone_no}}</div>
+            
+            {% set total_box = 0 %}
+{% for item in doc.delivery_stops %}
+    {% if item.visited != 1 and item.custom_box %}
+        {% set total_box = total_box + item.custom_box|int %}
+    {% endif %}
+{% endfor %}
+<div class="info-label"><strong>Total Box</strong>: {{ total_box }}</div>
+
+            <!-- <div class="info-label"><strong>Total Box</strong>: {{ doc.custom_total_boxes }}</div> -->
+
+
+            <div class="info-label"><strong>Phone No</strong>: {{ doc.custom_phone_no }}</div>
         </div>
 
         <table class="data-table">
@@ -120,39 +124,55 @@ table.data-table td:nth-child(8) {
                     <th>Signature With Seal</th>
                 </tr>
             </thead>
+            
             <tbody>
-                <!-- Repeat this row dynamically -->
-
+                {% set ns = namespace(si_no=1) %}
                 {% for item in doc.delivery_stops %}
+                    {% if item.visited == 0 %}
 
-                {% if item.delivery_note %}
-                {% set type = "Delivery Note" %}
-                {% else %}
-                {% set type = "Invoice" %}
-                {%endif%}
+                        {% if item.delivery_note %}
+                            {% set type = "Delivery Note" %}
+                        {% else %}
+                            {% set type = "Invoice" %}
+                        {% endif %}
 
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{type}}</td>
-                    <td>{{item.custom_document_date}}</td>
+                        <tr>
+                            <td>{{ ns.si_no }}</td>
+                            <td>{{ type }}</td>
+                            <td>{{ item.custom_document_date }}</td>
 
-                    {% if item.delivery_note %}
-                    <td>{{ item.delivery_note or "--"}}</td>
-                    {% else %}
-                    <td>{{ item.custom_sales_invoice or "--"}}</td>
-                    {%endif%}
+                            {% if item.delivery_note %}
+                                <td>{{ item.delivery_note or "--" }}</td>
+                            {% else %}
+                                <td>{{ item.custom_sales_invoice or "--" }}</td>
+                            {% endif %}
 
-                    <td>{{item.contact or "-"}}</td>
-                    <td>{{ item.customer_address.split('PIN Code:')[0]  or "-"}}</td>
-                    <!--<td>{{item.customer_address or "-"}}</td>-->
-                    <td>{{item.custom_box}}</td>
-                    <td></td>
-                </tr>
+                            {% set details = frappe.db.get_value("Customer", {"name": item.customer}, ["customer_name"], as_dict=True) %}
+
+                            <td>
+                                {{ details.customer_name or "-" }}
+                                <div style="border: 1px solid #000; margin-top: 4px; padding: 2px;">
+                                    {{ item.custom_sales_contact_no or "-" }}
+                                </div>
+                            </td>
+
+                            {% if item.custom_invoice_shipping_address %}
+                                <td>{{ item.custom_invoice_shipping_address.split('PIN Code:')[0] or "-" }}</td>
+                            {% else %}
+                                <td>{{ item.customer_address or "-" }}</td>
+                            {% endif %}
+
+                            <td>{{ item.custom_box }}</td>
+                            <td></td>
+                        </tr>
+
+                        {% set ns.si_no = ns.si_no + 1 %}
+                    {% endif %}
                 {% endfor %}
-                <!-- Add more rows here -->
             </tbody>
         </table>
     </div>
+
 </body>
 
 </html>

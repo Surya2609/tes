@@ -16,31 +16,40 @@
 
 <body>
 
-    
-
-
-    {% for copy in ["Original", "Duplicate", "POD", "Security"] %}
+    {% for copy in ["Original", "Duplicate", "POD"] %}
     <div class="copy-section">
         <h2 style="text-align: right ;">{{ copy }} Copy</h2>
         <!-- Header Section -->
         <div class="header">
 
 
-            
-            
- {% set einvoice = frappe.db.get_value("e-Invoice Log", {"reference_name": doc.name}, ["acknowledgement_number", "acknowledged_on", "signed_qr_code"], as_dict=True) %}
-<!--           <div style="margin: 20px 5px 0 0; width: 100px; height: 100px;" class="right-img">-->
-<!--    {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}-->
-<!--</div>-->
-           
+            {% set einvoice = frappe.db.get_value("e-Invoice Log", {"reference_name": doc.name},
+            ["acknowledgement_number", "acknowledged_on", "signed_qr_code"], as_dict=True) %}
+            <!--           <div style="margin: 20px 5px 0 0; width: 100px; height: 100px;" class="right-img">-->
+            <!--    {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}-->
+            <!--</div>-->
+
             <div style="margin: 20px 5px 0 0;" class="right-img">
                 {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}
             </div>
-<img src="/files/MVD Logo1 (1).jpg" alt="Right Image" class="right-img">
+
+
+            <!--            <div style="margin: 20px 5px 0 0;" class="right-img">-->
+            <!--    {% if einvoice and einvoice.signed_qr_code %}-->
+            <!--        {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}-->
+            <!--    {% else %}-->
+            <!-- Dummy QR code fallback (e.g., a static image or dummy value) -->
+            <!--        <img src="/assets/path_to_dummy_qr_code.png" alt="Dummy QR Code" style="width: 120px; height: 120px;" />-->
+            <!-- Or use dummy text QR -->
+            <!--        {{ web_block('E-Invoice QR Code', values={'qr_text': 'DUMMY_QR_TEXT'}) }}-->
+            <!--    {% endif %}-->
+            <!--</div>-->
+
+            <img src="/files/MVD Logo1 (1).jpg" alt="Right Image" class="right-img">
             <!--<img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">-->
-            
+
             <div class="company-details">
-                
+
                 <h4>TAX INVOICE</h4>
                 <!--<h4>{{ doc.qr_code }}</h4>-->
                 <h5><strong>{{doc.company}}</strong></h5>
@@ -76,49 +85,63 @@
 
                     <!-- <h6>{{ doc.address_display }}</h6> -->
 
-                          <!-- {% if doc.shipping_address %} -->
-                    <h6>{{ "SYNERGY PUNCHING PVT LTD - UNIT 1," }}</h6>
-                    <h6>{{ "No. 337, 9th Cross, 4th Phase," }}</h6>
-                    <h6>{{ "Peenya Industrial Area," }}</h6>                    
-                    <h6>{{ "BENGALURU - 560058" }}</h6>
-                    <h6>{{ "KARNATAKA," }}</h6>                    
-                    <h6>{{ "Mobile : 9164278622 , +91- 9844038341," }}</h6>
-                    <h6>{{ "GST No : 29AAFCS7167J1ZQ " }}</h6>
-                    <h6>{{ "PAN : AAFCS7167J" }}</h6>
-                    
-                    
-
-                <!-- {% else %}
-                       <h6>{{doc.shipping_address}}</h6>
-                {% endif %} -->
+                    {% if doc.custom_temprory_ship_addr %}
+                    <h6>{{ doc.custom_temprory_ship_addr }}</h6>
+                    {% else %}
+                    <h6>{{doc.shipping_address}}</h6>
+                    {% endif %}
 
                 </td>
                 <td class="text-justify" style="width: 30%;">
                     <h6><strong>Invoice NO: {{doc.name}}</strong></h6>
                     <h6>Invoice Date: {{doc.posting_date}}</h6>
-                  <h6>
-   SO NO:
-    {% set so_no = [] %}
-    {% for item in doc.items %}
-        {% if item.sales_order and item.sales_order not in so_no %}
-            {% set _ = so_no.append(item.sales_order) %}
-        {% endif %}
-    {% endfor %}
-    {{so_no}}
+                    <h6>
+                        SO NO:
+                        {% set so_no = [] %}
+                        {% for item in doc.items %}
+                        {% if item.sales_order and item.sales_order not in so_no %}
+                        {% set _ = so_no.append(item.sales_order) %}
+                        {% endif %}
+                        {% endfor %}
+                        {{so_no}}
 
-    <!-- {% for so in so_no %}
+                        <!-- {% for so in so_no %}
         {{ so[-4:] if so|length >= 4 else so }}{% if not loop.last %}, {% endif %}
     {% endfor %} -->
-</h6>
+                    </h6>
 
 
                     <h6>Due Date: {{doc.due_date}}</h6>
-                   <h6>
-  PO Ref. No:{{doc.po_no}}
-</h6>
+                    <h6>
+                        PO Ref. No:{{doc.po_no}}
+                    </h6>
 
 
-                    <h6>PO Ref. Date: {{doc.po_date}}</h6>
+
+                    <h6>PAY Terms: {{doc.custom_payment_terms}}</h6>
+
+                    {% set fields = [doc.custom_mode_of_shipment, doc.custom_type, doc.custom_payment,
+                    doc.custom_godown_name] %}
+                    {% set non_empty = [] %}
+                    {% for f in fields %}
+                    {% if f %}
+                    {% set _ = non_empty.append(f) %}
+                    {% endif %}
+                    {% endfor %}
+                    <h6>MOS: {{ non_empty | join(' , ') }}</h6>
+
+                    {% set llr = frappe.db.get_value("Delivery Stop", {"custom_sales_invoice": doc.name},
+                    ["custom_llr"],
+                    as_dict=True) %}
+
+                    {% if llr.custom_llr %}
+                    <h6>LLR: {{ llr.custom_llr }}</h6>
+                    {%endif%}
+
+                    {% if doc.custom_lut_no %}
+                    <h6>LUT No: {{ doc.custom_lut_no }}</h6>
+                    {%endif%}
+
                 </td>
             </tr>
             <!-- Second Section -->
@@ -147,112 +170,118 @@
             </tr>
         </table>
 
-            <!-- Items Table -->
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Sl No.</th>
-                        <th>Description of Product</th>
-                        <th>HSN Code</th>
-                        <th>Qty</th>
-                        <th>UOM</th>
-                        <th>Rate</th>
-                        <th>Discount</th>
-                        <th>Tax Rate</th>
-                        <th>Tax Amt</th>
-                        <th>Total Amount</th>
-                    </tr>
-                </thead>
-                {% set ns = namespace(shipping_total=0, si_no=1) %}
-                
+        <!-- Items Table -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl No.</th>
+                    <th>Description of Product</th>
+                    <th>HSN Code</th>
+                    <th>Qty</th>
+                    <th>UOM</th>
+                    <th>Rate</th>
+                    <th>Discount</th>
+                    <th>Tax Rate</th>
+                    <th>Tax Amt</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            {% set ns = namespace(shipping_total=0, si_no=1) %}
 
-                {% for item in doc.custom_si_unique_items %}
-                    {% if "shipping" in item.item_name.lower() %}
-                        {% set ns.shipping_total = ns.shipping_total + item.amount %}
-                     
-                        {% set ns.shipping_tax_tl = item.igst_rate or 0 %}
-                        
+
+            {% for item in doc.items %}
+            {% if "shipping" in item.item_name.lower() %}
+            {% set ns.shipping_total = ns.shipping_total + item.amount %}
+
+            {% set ns.shipping_tax_tl = item.igst_rate or 0 %}
+
+            {% else %}
+            <tr>
+                <td>{{ ns.si_no }}</td> {# Use custom counter instead of loop.index #}
+                <td>
+                    {% if item.customer_part_code %}
+                    <h6>{{ item.customer_part_code }}</h6>
                     {% else %}
-                        <tr>
-                            <td>{{ ns.si_no }}</td>  {# Use custom counter instead of loop.index #}
-                            <td>
-                                {% if item.customer_part_code %}
-                                    <h6>{{ item.customer_part_code }}</h6>
-                                {% else %}
-                                    <h6>{{ item.item }}</h6>
-                                {% endif %}
+
+                    <h6> {{ item.item_code }}</h6>
+                    {% endif %}
 
 
-                                <!-- <h6>{{ "Hex Socket CSK Screw Din7991-M4x20-A2-70" }}</h6> -->
-                                
-                                {% if item.customer_part_description %}
-  <h6>{{ item.customer_part_description }}</h6>
-{% else %}
-  <h6>{{ item.description }}</h6>
-{% endif %}
+                    <!-- <h6>{{ "Hex Socket CSK Screw Din7991-M4x20-A2-70" }}</h6> -->
+
+                    {% if item.customer_part_description %}
+                    <h6>{{ item.customer_part_description }}</h6>
+                    {% else %}
 
 
-                                <h6>Batch No: {{ item.batch_no }}</h6>
-                            </td>
-                            <td>{{ item.hsn_code }}</td>
-                            <td>{{ item.picked_qty }}</td>
-                            <td>{{ item.uom }}</td>
-                            <td>{{ item.rate }}</td>
-                            <td>{{ item.discount_percent or 0}}</td>
-                            
-                            <td>
-    {% if item.cgst_rate and item.sgst_rate %}
-        {{ item.cgst_rate + item.sgst_rate }}%
-    {% elif item.igst_rate %}
-        {{ item.igst_rate }}%
-    {% else %}
-        0%
-    {%endif%}
-    </td>
-    
+                    <h6> {{ item.description }}</h6>
+                    {% endif %}
 
-    <td>
-        {% set cgst = item.cgst_amount | float(default=0) %}
-        {% set sgst = item.sgst_amount | float(default=0) %}
-        {% set igst = item.igst_amount | float(default=0) %}
-      
-        {% if cgst > 0 or sgst > 0 %}
-          {{ (cgst + sgst) | round(2) }}
-        {% elif igst > 0 %}
-          {{ igst | round(2) }}
-        {% else %}
-          0.00
-        {%endif%}
-      </td>
 
-    <!-- <td>
+                    <h6>Batch No: {{ item.batch_no }}</h6>
+                </td>
+                <td>{{ item.gst_hsn_code }}</td>
+                <td>{{ item.qty }}</td>
+                <td>{{ item.uom }}</td>
+                <td>{{item.rate}}</td>
+                <td>{{ item.discount_percent or 0}}</td>
+
+                <td>
+                    {% if item.cgst_rate and item.sgst_rate %}
+                    {{ item.cgst_rate + item.sgst_rate }}%
+                    {% elif item.igst_rate %}
+                    {{ item.igst_rate }}%
+                    {% else %}
+                    0%
+                    {%endif%}
+                </td>
+
+
+                <td>
+                    {% set cgst = item.cgst_amount | float(default=0) %}
+                    {% set sgst = item.sgst_amount | float(default=0) %}
+                    {% set igst = item.igst_amount | float(default=0) %}
+
+                    {% if cgst > 0 or sgst > 0 %}
+                    {{ (cgst + sgst) | round(2) }}
+                    {% elif igst > 0 %}
+                    {{ igst | round(2) }}
+                    {% else %}
+                    0.00
+                    {%endif%}
+                </td>
+
+                <!-- <td>
     {% if item.cgst_amount and item.sgst_amount %}
         {{ (item.cgst_amount | float + item.sgst_amount | float) | round(2) }}
-    {% elif item.igst_amount %}
+    {% elif 18%}
         {{ item.igst_amount | float | round(2) }}
     {% else %}
         0.00
     {%endif%}
     </td>
                          -->
-                            
-                            <!--<td>-->
-                            <!--    {% if item.igst_amount %}-->
-                            <!--        {{ item.igst_amount }}-->
-                            <!--    {% else %}-->
-                            <!--        {{ item.cgst_amount or 0 + item.sgst_amount or 0 }}-->
-                            <!--    {% endif %}-->
-                            <!--</td>-->
-                            
-                            
-                            <td>{{ item.amount }}</td>
-                        </tr>
-                        {% set ns.si_no = ns.si_no + 1 %}
-                    {% endif %}
-                {% endfor %}
 
-    </tbody>
+                <!--<td>-->
+                <!--    {% if item.igst_amount %}-->
+                <!--        {{ item.igst_amount }}-->
+                <!--    {% else %}-->
+                <!--        {{ item.cgst_amount or 0 + item.sgst_amount or 0 }}-->
+                <!--    {% endif %}-->
+                <!--</td>-->
+
+
+                <td>{{ item.amount }}</td>
+            </tr>
+            {% set ns.si_no = ns.si_no + 1 %}
+            {% endif %}
+            {% endfor %}
+
+            </tbody>
+            <div
+                style="break-inside: avoid; page-break-inside: avoid; margin-top: 20px; display: flex; border: 1px solid #000;">
         </table>
+
         <div style="display: flex; width: 100%; align-items: flex-start;">
             <!-- Left Side: Table -->
             <div style="flex: 1; margin-right: 20px;">
@@ -293,6 +322,7 @@
                         <!-- Loop through taxes if the list is not empty -->
                         {% for tax in doc.taxes %}
                         <tr>
+
                             {% if tax.gst_tax_type == "cgst" %}
                             <td style="text-align: center;">{{ tax.rate }}</td>
                             <td style="text-align: center;">{{ tax.tax_amount }}</td>
@@ -342,13 +372,14 @@
 
 
                 <div style="display: flex; justify-content: space-between;">
+
                     <strong>Shipping Charges</strong>
-                      <span style="text-align: center;"></span>
-                    
+                    <span style="text-align: center;"></span>
+
                     <span>{{ ns.shipping_total or 0}}</span>
-                  </div>
-                  
-                  <!-- <div style="display: flex; justify-content: space-between;">
+                </div>
+
+                <!-- <div style="display: flex; justify-content: space-between;">
                       <strong>Shipping Tax</strong>
                         <span style="text-align: center;"></span>
                       <span>{{ ns.shipping_tax_tl or 0}}%</span>
@@ -382,7 +413,7 @@
                 </div>
 
                 {# All Actual charge rows #}
-<!-- After the items loop, display Shipping Charges -->
+                <!-- After the items loop, display Shipping Charges -->
 
 
 
@@ -405,8 +436,10 @@
 
 
         <div class="footer">
+            <!--<" style="break-inside: avoid; page-break-inside: avoid; margin-top: 20px; display: flex; border: 1px solid #000;">-->
             {% set company_details = frappe.db.get_value("Company", {"company_name": doc.company}, ["custom_bank_name",
             "custom_branch", "custom_ifsc", "custom_ac_no"], as_dict=True) %}
+
             <p>Total Amount (In Words): <strong>{{ doc.in_words }}</strong></p>
             <hr>
 
@@ -428,67 +461,42 @@
                 </div>
             </div>
 
+
+
             <hr>
-            
-            
-            
-   <!-- Terms & Conditions and Signatory (Avoid breaking across pages) -->
-<div style="break-inside: avoid; page-break-inside: avoid; margin-top: 20px; display: flex; border: 1px solid #000;">
-    <!-- Left Side: Terms & Conditions -->
-    <div style="flex: 1; padding: 15px; border-right: 1px solid #000;">
-        <strong>Terms & Conditions:</strong>
-        <ol style="margin-top: 5px; padding-left: 20px;">
-            <li>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</li>
-            <li>Subject to Bangalore Jurisdiction</li>
-            <li>This is a Computer Generated Invoice</li>
-            <li><strong>WE ARE A SMALL ENTERPRISE UNIT REGISTERED UNDER MSME Act vide Registration Number UDYAM-KR-03-0017581</strong></li>
-        </ol>
-    </div>
-
-    <!-- Right Side: Authorized Signatory -->
-    <div style="flex: 0 0 300px; padding: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;">
-        <span>For, <strong>{{ doc.company }}</strong></span>
-        <br>
-        <span>Authorised Signatory</span>
-    </div>
-</div>
-
-<!-- Force Page Break After T&C for duplicate copy -->
-<div style="page-break-after: always;"></div>
-
-{% endfor %}
-            
-            s
-            <!-- Force Page Break Before Terms & Conditions -->
-<!--<div style="page-break-before: always;"></div>-->
-
-<!--<div style="display: flex; border: 1px solid #000; margin-top: 20px;">-->
-    <!-- Left Side: Terms & Conditions -->
-<!--    <div style="flex: 1; padding: 15px; border-right: 1px solid #000;">-->
-<!--        <strong>Terms & Conditions:</strong>-->
-<!--        <ol style="margin-top: 5px; padding-left: 20px;">-->
-<!--            <li>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</li>-->
-<!--            <li>Subject to Bangalore Jurisdiction</li>-->
-<!--            <li>This is a Computer Generated Invoice</li>-->
-<!--            <li><strong>WE ARE A SMALL ENTERPRISE UNIT REGISTERED UNDER MSME Act vide Registration Number UDYAM-KR-03-0017581</strong></li>-->
-<!--        </ol>-->
-<!--    </div>-->
-
-    <!-- Right Side: Authorized Signatory -->
-<!--    <div style="flex: 0 0 300px; padding: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;">-->
-<!--        <span>For, <strong>{{ doc.company }}</strong></span>-->
-<!--        <br>-->
-<!--        <span>Authorised Signatory</span>-->
-<!--    </div>-->
-<!--</div>-->
-            
-            
 
 
-            
-            
-            
-   
+
+            <!-- Terms & Conditions and Signatory (Avoid breaking across pages) -->
+            <div
+                style="break-inside: avoid; page-break-inside: avoid; margin-top: 20px; display: flex; border: 1px solid #000;">
+                <!-- Left Side: Terms & Conditions -->
+                <div style="flex: 1; padding: 15px; border-right: 1px solid #000;">
+                    <strong>Terms & Conditions:</strong>
+                    <ol style="margin-top: 5px; padding-left: 20px;">
+                        <li>We declare that this invoice shows the actual price of the goods described and that all
+                            particulars are true and correct.</li>
+                        <li>Subject to Bangalore Jurisdiction</li>
+                        <li>This is a Computer Generated Invoice</li>
+                        <li><strong>WE ARE A SMALL ENTERPRISE UNIT REGISTERED UNDER MSME Act vide Registration Number
+                                UDYAM-KR-03-0017581</strong></li>
+                    </ol>
+                </div>
+
+                <!-- Right Side: Authorized Signatory -->
+                <div
+                    style="flex: 0 0 300px; padding: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;">
+                    <span>For, <strong>{{ doc.company }}</strong></span>
+                    <br>
+                    <span>Authorised Signatory</span>
+                </div>
+            </div>
+
+            <!-- Force Page Break After T&C for duplicate copy -->
+            <div style="page-break-after: always;"></div>
+
+
+            {% endfor %}
 
 </body>
 

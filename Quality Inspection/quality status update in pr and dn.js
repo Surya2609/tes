@@ -1,4 +1,5 @@
 frappe.ui.form.on('Quality Inspection', {
+    // on_submit
     on_submit: function (frm) {
         console.log("step 0");
         if (frm.doc.reference_type == "Purchase Receipt") {

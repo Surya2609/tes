@@ -6,5 +6,5 @@ FROM `tabSub Group 2` AS parent
 INNER JOIN `tabSub Group 2 Child` AS child ON child.parent = parent.name
 WHERE child.parent_group_name = %s
 """, (parent_group), as_dict=1)
-    
+
 frappe.response['message'] = val

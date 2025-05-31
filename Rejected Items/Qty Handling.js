@@ -51,10 +51,10 @@ function add_row(frm) {
         transcation_id: child_reference_id, // Generated Reference ID
         date: frappe.datetime.now_date(), // Current Date in YYYY-MM-DD format
         time: frappe.datetime.now_time(), // Current Time in HH:mm:ss format
-        // warehouse: target_warehouse, // Replace with your source field or value
+
         action: frm.doc.move_to,
         quantity: frm.doc.move_qty,
-        // stock_transfered_id: stock_ref_id || 0
+
     };
 
     let new_row = frm.add_child('transaction_history', new_row_data);
@@ -193,7 +193,7 @@ function return_purchase_receipt(frm, pr_item_name) {
                                 id = series_map[company];
                             }
 
-                            console.log("s inv", supplier_inv_no);
+                            console.log("s inv", supplier_inv_no); 
 
                             frappe.call({
                                 method: 'frappe.client.insert',
@@ -226,21 +226,21 @@ function return_purchase_receipt(frm, pr_item_name) {
                                         let purchase_receipt_name = response.message.name;
                                         frappe.msgprint(__('Purchase Receipt {0} created successfully!', [purchase_receipt_name]));
 
-                                        frappe.call({
-                                            method: 'frappe.client.submit',
-                                            args: {
-                                                doc: response.message
-                                            },
-                                            callback: function (submit_response) {
-                                                if (submit_response.message) {
-                                                    frappe.msgprint(__('Purchase Receipt {0} submitted successfully!', [submit_response.message.name]));
-                                                    add_row(frm);
-                                                    update_qty(frm);
-                                                } else {
-                                                    frappe.msgprint(__('Failed to submit the Purchase Receipt.'));
-                                                }
-                                            }
-                                        });
+                                        // frappe.call({
+                                        //     method: 'frappe.client.submit',
+                                        //     args: {
+                                        //         doc: response.message
+                                        //     },
+                                        //     callback: function (submit_response) {
+                                        //         if (submit_response.message) {
+                                        //             frappe.msgprint(__('Purchase Receipt {0} submitted successfully!', [submit_response.message.name]));
+                                        //             add_row(frm);
+                                        //             update_qty(frm);
+                                        //         } else {
+                                        //             frappe.msgprint(__('Failed to submit the Purchase Receipt.'));
+                                        //         }
+                                        //     }
+                                        // });
                                     } else {
                                         frappe.msgprint(__('Failed to create the Purchase Receipt.'));
                                     }

@@ -14,15 +14,15 @@ function fetch_diagram_files(frm) {
             if (response.message) {
                 const data = response.message;
                 console.log(data);
-                frm.clear_table("custom_files");
+                frm.clear_table("custom_diagram_files");
                 if (data.length != 0) {
                     data.forEach((row) => {
-                        let child = frm.add_child("custom_files");
+                        let child = frm.add_child("custom_diagram_files");
                         child.diagram_name = row.diagram_name;
                         child.diagram_file = row.diagram;
                         child.notes = row.notes;
-                    });
-                    frm.refresh_field("custom_files");
+                    }); 
+                    frm.refresh_field("custom_diagram_files");
                 }
             }
         },

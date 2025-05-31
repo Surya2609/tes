@@ -50,10 +50,13 @@ frappe.ui.form.on('Quality Inspection', {
  
     const tableHTML = `
      <div class="scrollable-table-wrapper" style="overflow-x: auto; overflow-y: auto; max-height: 400px; border: 1px solid #ddd; padding: 10px;">
+     
+     
          <table class="scrollable-table" style="width: 50%; border-collapse: collapse; text-align: left; margin: auto;">
              <thead>
                  <tr style="background-color: #f9f9f9;">
-                     <th style="padding: 10px; min-width: 200px; white-space: nowrap;">Name</th>    
+                    <th style="padding: 10px; min-width: 150px;">POR Date</th> 
+                     <th style="padding: 10px; min-width: 200px; white-space: nowrap;">POR ID</th>    
                      <th style="padding: 10px; min-width: 150px;">Sup ID</th> 
                      <th style="padding: 10px; min-width: 150px;">Supplier</th> 
                  </tr>
@@ -61,12 +64,20 @@ frappe.ui.form.on('Quality Inspection', {
              <tbody>
                  ${data.map((record, index) => ` 
                      <tr id="row-${index}" class="table-row" style="cursor: pointer;">
+                          <td style="padding: 10px;">
+                    ${record.posting_date || ''}<br>
+                    <span style="font-weight: normal;">
+                        ${record.posting_time}
+                    </span>
+                </td>
                          <td style="padding: 10px; white-space: nowrap; word-break: keep-all;">${record.name || ''}</td> 
                          <td style="padding: 10px;">${record.supplier || ''}</td> 
                          <td style="padding: 10px;">${record.supplier_name || ''}</td> 
                      </tr>`).join('')}
              </tbody>
          </table>
+         
+         
      </div>
  `;
  
@@ -429,9 +440,8 @@ frappe.ui.form.on('Quality Inspection', {
                      item.warehouse = work_in_progress;
                      item.custom_is_deviated = 'YES';
                      console.log("cust", item.custom_is_deviated);
-                 } else if (status === 'Rejected') {
-                     item.custom_is_deviated = "RJI";
-                     item.warehouse = rejected_ware_house;
+                 } else if(status === 'Rejected'){
+                    
                  }
              }
          });

@@ -11,15 +11,25 @@ function getDnDate(frm) {
         if (row.delivery_note) {
             pending++;
             frappe.call({
-                method: "frappe.client.get_value",
+                method: "get_dn_date_ph_no",
                 args: {
-                    doctype: "Delivery Note",
-                    filters: { name: row.delivery_note },
-                    fieldname: "posting_date"
+                    delivery_note: row.delivery_note
                 },
                 callback: function (r) {
+                    console.log("r mesg", r.message);
                     if (r.message) {
-                        frappe.model.set_value(row.doctype, row.name, 'custom_document_date', r.message.posting_date);
+                        let contact_no = "";
+                        frappe.model.set_value(row.doctype, row.name, 'custom_document_date', r.message[0].posting_date);
+
+                        if (r.message[0].contact_no_1) {
+                            contact_no = r.message[0].contact_no_1;
+                        } else if (r.message[0].contact_no_2) {
+                            contact_no = r.message[0].contact_no_2;
+                        } else {
+                            contact_no = r.message[0].contact_no_3;
+                        }
+                        frappe.model.set_value(row.doctype, row.name, 'custom_sales_person_id', r.message[0].salesPersonId);
+                        frappe.model.set_value(row.doctype, row.name, 'custom_sales_contact_no', contact_no);
                     }
                     pending--;
                     if (pending === 0) {

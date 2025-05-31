@@ -129,7 +129,7 @@ font-weight: bold;
     </tr>
     <tr>
     <td><strong>Material</strong></td>
-    <td>{{ doc.custom_material or "None" }}</td>
+    <td>{{ doc.custom_item_material or "N/A" }}</td>
     <td class="right-text">Quality Doc No and Date</td>
     <td>{{ doc.name }} and {{ doc.report_date }}</td>
     </tr>
@@ -226,15 +226,15 @@ font-weight: bold;
     {% for item in doc.readings %}
     <tr>
         <td>{{ loop.index }}</td>
-        <td>{{ item.specification }}</td>
+        <td>{{ item.specification or "N/A"}}</td>
         {% if item.specification and "THREAD" in item.specification.upper() %}
-        <td colspan="3">M{{ item.value }}</td>
-        <td>{{ item.parameter_group }}</td>
+        <td colspan="3">{{ item.value or "N/A"}}</td>
+        <td>{{ item.parameter_group or "N/A"}}</td>
         <td colspan="7">GO & NO GO GAUGE FOUND OK</td>
         <td>{{ item.status }}</td>
         {% elif item.specification and ("APPEARANCE" in item.specification.upper() or "SURFACE FINISH" in item.specification.upper()) %}
-        <td colspan="3">{{ item.value }}</td>
-        <td>{{ item.parameter_group }}</td>
+        <td colspan="3">{{ item.value or "N/A"}}</td>
+        <td>{{ item.parameter_group or "N/A"}}</td>
         <td colspan="5">{% if item.status and item.status.lower() == "accepted" %}OK{% else %}NOT OK{% endif %}</td>
         <td>--</td><td>--</td>
         <td>{{ item.status }}</td>
@@ -243,8 +243,8 @@ font-weight: bold;
             <td colspan="3">{{ item.value }}</td>
         {% else %}
             <td>{{ item.value }}</td>
-            <td>{{ item.min_value }}</td>
-            <td>{{ item.max_value }}</td>
+            <td>{{ item.min_value or "N/A"}}</td>
+            <td>{{ item.max_value or "N/A" }}</td>
         {% endif %}
                
 <td>{{ item.parameter_group }}</td>
@@ -253,8 +253,9 @@ font-weight: bold;
 <td>{{ item.reading_3 }}</td>
 <td>{{ item.reading_4 }}</td>
 <td>{{ item.reading_5 }}</td>
-<td>{{ item.custom_reading_max or 0}}</td>
 <td>{{ item.custom_reading_min or 0}}</td>
+<td>{{ item.custom_reading_max or 0}}</td>
+
 <td>{{ item.status }}</td>
         
         {% endif %}
@@ -278,14 +279,14 @@ font-weight: bold;
     <tr>
         <td colspan="6">Prepared by: {{ doc.custom_inspector_name }}</td>
         <td colspan="2" style="text-align: center;">
-            <img src="{{ '/files/stamp_qi.jpg' }}" alt="Stamp" width="40" height="18">
+            <img src="{{ '/files/stamp_qi.jpg' }}" alt="Stamp" width="60" height="18">
         </td>
         <td colspan="6">Approved By: {{ doc.verified_by }}</td>
     </tr>
     
     <tr>
         <td colspan="14" style="text-align: center; font-weight: bold;">
-            Content will come here...
+            <!-- Content will come here... -->
         </td>
     </tr>
     </tbody>

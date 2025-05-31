@@ -153,7 +153,8 @@ function open_dialogue(data, frm) {
         attachRowEvents(currentFilteredData);
     }
 
-    // Initial render
+
+    
     renderTable(data);
     renderFooter();
     attachRowEvents(data);
@@ -170,6 +171,7 @@ function updateDeliveryStopRow(row, record) {
     frappe.model.set_value(row.doctype, row.name, name, record.name || '');
     frappe.model.set_value(row.doctype, row.name, 'custom_total_qty', record.total_qty || '');
     frappe.model.set_value(row.doctype, row.name, 'customer', record.customer || '');
+    frappe.model.set_value(row.doctype, row.name, 'contact', record.customer_name || '');
 
     if (record.custom_invoice_shipping_address) {
         frappe.model.set_value(row.doctype, row.name, 'custom_invoice_shipping_address', record.custom_invoice_shipping_address || '');
@@ -178,4 +180,9 @@ function updateDeliveryStopRow(row, record) {
     }
 
     frappe.model.set_value(row.doctype, row.name, 'custom_document_date', record.posting_date || '');
+    
+    
+    frappe.model.set_value(row.doctype, row.name, 'custom_sales_person_id', record.sales_contact || '');
+    frappe.model.set_value(row.doctype, row.name, 'custom_sales_contact_no', record.contact_no_1 || '');
+    
 }

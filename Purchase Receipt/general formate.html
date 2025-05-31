@@ -4,32 +4,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css"> 
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
   <!-- Header Section -->
   <div class="header">
     <img src="/files/MVD Logo1 (1).jpg" alt="Left Image" class="left-img">
-       <img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">
+    <img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">
     <div class="company-details">
+      {% if doc.is_return %}
+      <h4>TAX INVOICE</h4>
+      {% else %}
       <h4>PURCHASE RECEIPT</h4>
+      {% endif %}
+
       <h5><strong>{{doc.company}}</strong></h5>
 
       {% set company_details = frappe.db.get_value("Company", {"company_name": doc.company},
       ["custom_address_1st_line", "custom_address_2nd_line", "gstin", "custom_state", "custom_state_code",
       "phone_no", "email"], as_dict=True) %}
 
-             <h6 class="text-center" style="padding: 0;">Address: {{company_details.custom_address_1st_line}},</h6>
-            <h6>{{company_details.custom_address_2nd_line}}</h6>
-            <h6 class="text-center" style="padding: 0;">Mobile: {{company_details.phone_no}}, Email:
-                {{company_details.email}}</h6>
-            <h6 style="padding: 0;"><strong>GST No: {{ company_details.gstin }}</strong></h6>
-            <h6 style="padding: 3;"><strong>State: {{company_details.custom_state}}, State Code:
-                    {{company_details.custom_state_code}}</strong></h6>
+      <h6 class="text-center" style="padding: 0;">Address: {{company_details.custom_address_1st_line}},</h6>
+      <h6>{{company_details.custom_address_2nd_line}}</h6>
+      <h6 class="text-center" style="padding: 0;">Mobile: {{company_details.phone_no}}, Email:
+        {{company_details.email}}</h6>
+      <h6 style="padding: 0;"><strong>GST No: {{ company_details.gstin }}</strong></h6>
+      <h6 style="padding: 3;"><strong>State: {{company_details.custom_state}}, State Code:
+          {{company_details.custom_state_code}}</strong></h6>
 
-        </div>
-      </div>
+    </div>
+  </div>
 
 
   <!-- Purchase Receipt Details -->
@@ -51,27 +56,27 @@
       <td class="text-justify">
         <h6><strong>POR Number : {{doc.name}}</strong></h6>
         <h6>
-            PO Number : 
-            {% set po_numbers = [] %}
-            {% for item in doc.items %}
-                {% if item.purchase_order not in po_numbers %}
-                    {% set _ = po_numbers.append(item.purchase_order) %}
-                {% endif %}
-            {% endfor %}
-            {{ po_numbers | join(", ") }}
+          PO Number :
+          {% set po_numbers = [] %}
+          {% for item in doc.items %}
+          {% if item.purchase_order not in po_numbers %}
+          {% set _ = po_numbers.append(item.purchase_order) %}
+          {% endif %}
+          {% endfor %}
+          {{ po_numbers | join(", ") }}
         </h6>
         <h6>Receipt Date: {{doc.posting_date}}</h6>
-         <!-- {{doc.purchase_order_date}} -->
+        <!-- {{doc.purchase_order_date}} -->
         <!-- <h6>Due Date: {{doc.due_date}}</h6> -->
         <!-- <h6>PO Ref. No. {{doc.po_no}}</h6>
         <h6>PO Ref. Date {{doc.po_date}}</h6> -->
-       <h6>Supplier invoice number:{{doc.supplier_delivery_note}}</h6>
+        <h6>Supplier invoice number:{{doc.supplier_delivery_note}}</h6>
         <h6>Supplier invoice Date:{{doc.custom_supplier_invoice_date}}</h6>
         <h6>Currency : {{doc.currency}}</h6>
       </td>
 
 
-      
+
     </tr>
 
   </table>
@@ -97,36 +102,42 @@
       <tr>
         <td>{{ loop.index }}</td>
         <td>
-          <h6 style=  "padding: 0; line-height: 1;">{{ item.item_code }}</h6>
+          <h6 style="padding: 0; line-height: 1;">{{ item.item_code }}</h6>
           <h6 style="line-height: 1;">{{ item.description }}</h6>
           <h6 style="line-height: 1;">Batch No: {{ item.custom_item_batch_no}}</h6>
         </td>
         <td>{{ item.gst_hsn_code }}</td>
-        <td>{{ item.qty }}</td>
+        <td>{{ item.qty | abs}}</td>
         <td>{{ item.uom }}</td>
-        <td>{{ item.rate }}</td>
-        <!--<td>{{ item.discount_percentage }}</td>-->  <td>{{ 0 }}%</td>
-                  <td>
-    {% if item.igst_rate %}
-        {{ item.igst_rate }}%
-    {% else %}
-        {{ item.cgst_rate + item.sgst_rate }}%
-    {% endif %}
-</td>
-<td>
-    {% if item.igst_amount %}
-        {{ '%.2f' % item.igst_amount }}
-    {% else %}
-        {{ '%.2f' % (item.cgst_amount + item.sgst_amount) }}
-    {% endif %}
-</td>
-        <td>{{ item.amount }}</td>
+        <td>
+          {% if item.custom_unit_rate %}
+          {{ item.custom_unit_rate }}
+          {% else %}
+          {{ item.rate }}
+          {% endif %}
+        </td>
+        <td> {{ item.custom_discount_percent or 0 }}</td>
+        <td>
+          {% if item.igst_rate %}
+          {{ item.igst_rate }}%
+          {% else %}
+          {{ item.cgst_rate + item.sgst_rate }}%
+          {% endif %}
+        </td>
+        <td>
+          {% if item.igst_amount %}
+          {{ '%.2f' % item.igst_amount | abs  }}
+          {% else %}
+          {{ '%.2f' % (item.cgst_amount + item.sgst_amount) | abs  }}
+          {% endif %}
+        </td>
+        <td>{{ item.amount | abs }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-
+  
   <div style="display: flex; width: 100%; align-items: flex-start;">
     <!-- Left Side: Table -->
     <div style="flex: 1; margin-right: 20px;">
@@ -140,73 +151,73 @@
           </tr>
         </thead>
         <tbody>
-       <tr>
-  <td style="text-align: center;">Rate%</td>
-  <td style="text-align: center;">AMT</td>
-  <td style="text-align: center;">Rate%</td>
-  <td style="text-align: center;">AMT</td>
-  <td style="text-align: center;">Rate%</td>
-  <td style="text-align: center;">AMT</td>
-  <td style="text-align: center;">Rate%</td>
-  <td style="text-align: center;">AMT</td>
-</tr>
+          <tr>
+            <td style="text-align: center;">Rate%</td>
+            <td style="text-align: center;">AMT</td>
+            <td style="text-align: center;">Rate%</td>
+            <td style="text-align: center;">AMT</td>
+            <td style="text-align: center;">Rate%</td>
+            <td style="text-align: center;">AMT</td>
+            <td style="text-align: center;">Rate%</td>
+            <td style="text-align: center;">AMT</td>
+          </tr>
 
-{% if not doc.taxes %}
-  <!-- If there are no taxes, show a row with zeros -->
-  <tr>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-    <td style="text-align: center;">0</td>
-  </tr>
-{% else %}
-  <!-- Loop through taxes if the list is not empty -->
-  {% for tax in doc.taxes %}
-    <tr>
-      {% if tax.gst_tax_type == "cgst" %}
-        <td style="text-align: center;">{{ tax.rate }}</td>
-        <td style="text-align: center;">{{ tax.tax_amount }}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      {% elif tax.gst_tax_type == "sgst" %}
-        <td></td>
-        <td></td>
-        <td style="text-align: center;">{{ tax.rate }}</td>
-        <td style="text-align: center;">{{ tax.tax_amount }}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      {% elif tax.gst_tax_type == "igst" %}
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td style="text-align: center;">{{ tax.rate }}</td>
-        <td style="text-align: center;">{{ tax.tax_amount }}</td>
-        <td></td>
-        <td></td>
-      {% elif tax.gst_tax_type == "ugst" %}
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td style="text-align: center;">{{ tax.rate }}</td>
-        <td style="text-align: center;">{{ tax.tax_amount }}</td>
-      {% endif %}
-    </tr>
-  {% endfor %}
-{% endif %}
+          {% if not doc.taxes %}
+          <!-- If there are no taxes, show a row with zeros -->
+          <tr>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+            <td style="text-align: center;">0</td>
+          </tr>
+          {% else %}
+          <!-- Loop through taxes if the list is not empty -->
+          {% for tax in doc.taxes %}
+          <tr>
+            {% if tax.gst_tax_type == "cgst" %}
+            <td style="text-align: center;">{{ tax.rate  }}</td>
+            <td style="text-align: center;">{{ tax.tax_amount | abs}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            {% elif tax.gst_tax_type == "sgst" %}
+            <td></td>
+            <td></td>
+            <td style="text-align: center;">{{ tax.rate }}</td>
+            <td style="text-align: center;">{{ tax.tax_amount | abs}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            {% elif tax.gst_tax_type == "igst" %}
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: center;">{{ tax.rate }}</td>
+            <td style="text-align: center;">{{ tax.tax_amount | abs}}</td>
+            <td></td>
+            <td></td>
+            {% elif tax.gst_tax_type == "ugst" %}
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: center;">{{ tax.rate }}</td>
+            <td style="text-align: center;">{{ tax.tax_amount | abs}}</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>
@@ -215,33 +226,33 @@
     <div style="flex: 1; padding: 10px;">
       <div style="display: flex; justify-content: space-between;">
         <strong>Sub Total</strong>
-        <span>{{doc.total}}</span>
+        <span>{{doc.total | abs}}</span>
       </div>
       <div style="display: flex; justify-content: space-between;">
         <strong>Cash Discount:</strong>
         <span style="text-align: center;">{{doc.additional_discount_percentage}}%</span>
         <span>{{doc.discount_amount}}</span>
       </div>
-       <div style="display: flex; justify-content: space-between;">
+      <div style="display: flex; justify-content: space-between;">
         <strong>Total Tax</strong>
-          <span style="text-align: center;">{{doc.taxes_and_charges_added}}</span>
-        
-        
-        
-<!-- {% set total_tax = doc.taxes | selectattr("charge_type", "equalto", "On Net Total") | map(attribute="tax_amount") | sum %}-->
-<!--{% set shipping_total = doc.taxes | selectattr("charge_type", "equalto", "Actual") | map(attribute="tax_amount") | sum %}-->
+        <span style="text-align: center;">{{doc.taxes_and_charges_added  | abs}}</span>
 
-<!--<div style="display: flex; justify-content: space-between;">-->
-    <!--<span>{{ total_taxes_and_charges }}</span>  -->
-<!--</div>-->
-</div>
-     
-<div style="display: flex; justify-content: space-between;">
-    <strong>Shipping Charges</strong>
-    <span>{{ shipping_total }}</span>  
-</div>
-       
-     
+
+
+        <!-- {% set total_tax = doc.taxes | selectattr("charge_type", "equalto", "On Net Total") | map(attribute="tax_amount") | sum %}-->
+        <!--{% set shipping_total = doc.taxes | selectattr("charge_type", "equalto", "Actual") | map(attribute="tax_amount") | sum %}-->
+
+        <!--<div style="display: flex; justify-content: space-between;">-->
+        <!--<span>{{ total_taxes_and_charges }}</span>  -->
+        <!--</div>-->
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <strong>Shipping Charges</strong>
+        <span>{{ shipping_total  | abs}}</span>
+      </div>
+
+
       <!--<div style="display: flex; justify-content: space-between;">-->
       <!--  <strong>Shipping Tax</strong>-->
       <!--  <span style="text-align: center;"></span>-->
@@ -255,7 +266,7 @@
         <strong>Packing Charges </strong>
         <span>0</span>
       </div>
-      
+
       <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
         <strong>Packing Tax</strong>
         <span>0</span>
@@ -267,35 +278,36 @@
       <hr style="margin: 5px 0;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
         <strong>Grand Total</strong>
-       <span style="text-align: right;">
-    {% if doc.rounded_total %}
-        {{ doc.rounded_total }}
-    {% else %}
-        {{ doc.grand_total }}
-    {% endif %}
-</span>
+        <span style="text-align: right;">
+          {% if doc.rounded_total %}
+          {{ doc.rounded_total  | abs}}
+          {% else %}
+          {{ doc.grand_total  | abs}}
+          {% endif %}
+        </span>
 
       </div>
-      <hr style="margin: 5px 0;">   
+      <hr style="margin: 5px 0;">
     </div>
   </div>
 
   <div class="footer">
-     <div style="border-top: 1px solid black; margin-top: 20px; padding-top: 10px; display: flex; justify-content: space-between;">
+    <div
+      style="border-top: 1px solid black; margin-top: 20px; padding-top: 10px; display: flex; justify-content: space-between;">
       <div style="width: 60%;">
-          <p><strong>Total Amount (In Words):{{doc.in_words}}</strong> </p>
-          <p><strong>Remarks:</strong></p>
-          <p>Received the Goods in Good Condition</p>
-        
-      </div> 
-      <div style="width: 40%; text-align: right;">
-          <p>For <strong>{{doc.company}}</strong></p>
-          <br><br>
-          <p></p>
-         <div style="width: 80%; text-align: centre;"> 
-         <p>Authorised Signatory</p>
+        <p><strong>Total Amount (In Words):{{doc.in_words}}</strong> </p>
+        <p><strong>Remarks:</strong></p>
+        <p>Received the Goods in Good Condition</p>
+
       </div>
-    </div>
+      <div style="width: 40%; text-align: right;">
+        <p>For <strong>{{doc.company}}</strong></p>
+        <br><br>
+        <p></p>
+        <div style="width: 80%; text-align: centre;">
+          <p>Authorised Signatory</p>
+        </div>
+      </div>
     </div>
   </div>
 </body>

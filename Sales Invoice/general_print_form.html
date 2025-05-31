@@ -37,6 +37,19 @@
             <div style="margin: 20px 5px 0 0;" class="right-img">
                 {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}
             </div>
+
+
+            <!--            <div style="margin: 20px 5px 0 0;" class="right-img">-->
+            <!--    {% if einvoice and einvoice.signed_qr_code %}-->
+            <!--        {{ web_block('E-Invoice QR Code', values={'qr_text': einvoice.signed_qr_code}) }}-->
+            <!--    {% else %}-->
+            <!-- Dummy QR code fallback (e.g., a static image or dummy value) -->
+            <!--        <img src="/assets/path_to_dummy_qr_code.png" alt="Dummy QR Code" style="width: 120px; height: 120px;" />-->
+            <!-- Or use dummy text QR -->
+            <!--        {{ web_block('E-Invoice QR Code', values={'qr_text': 'DUMMY_QR_TEXT'}) }}-->
+            <!--    {% endif %}-->
+            <!--</div>-->
+
             <img src="/files/MVD Logo1 (1).jpg" alt="Right Image" class="right-img">
             <!--<img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">-->
 
@@ -109,7 +122,31 @@
                     </h6>
 
 
-                    <h6>PO Ref. Date: {{doc.po_date}}</h6>
+               
+                    <h6>PAY Terms: {{doc.custom_payment_terms}}</h6>
+
+                    {% set fields = [doc.custom_mode_of_shipment, doc.custom_type, doc.custom_payment,
+                    doc.custom_godown_name] %}
+                    {% set non_empty = [] %}
+                    {% for f in fields %}
+                    {% if f %}
+                    {% set _ = non_empty.append(f) %}
+                    {% endif %}
+                    {% endfor %}
+                    <h6>MOS: {{ non_empty | join(' , ') }}</h6>
+
+                    {% set llr = frappe.db.get_value("Delivery Stop", {"custom_sales_invoice": doc.name},
+                    ["custom_llr"],
+                    as_dict=True) %}
+
+                    {% if llr.custom_llr %}
+                    <h6>LLR: {{ llr.custom_llr }}</h6>
+                    {%endif%}
+
+                    {% if doc.custom_lut_no %}
+                    <h6>LUT No: {{ doc.custom_lut_no }}</h6>
+                    {%endif%}
+
                 </td>
             </tr>
             <!-- Second Section -->
@@ -170,7 +207,8 @@
                     {% if item.customer_part_code %}
                     <h6>{{ item.customer_part_code }}</h6>
                     {% else %}
-                    <h6>{{ item.item }}</h6>
+
+                    <h6> {{ item.item }}</h6>
                     {% endif %}
 
 
@@ -179,7 +217,9 @@
                     {% if item.customer_part_description %}
                     <h6>{{ item.customer_part_description }}</h6>
                     {% else %}
-                    <h6>{{ item.description }}</h6>
+
+
+                    <h6> {{ item.description }}</h6>
                     {% endif %}
 
 
@@ -401,11 +441,9 @@
 
 
         <div class="footer">
+            <!--<" style="break-inside: avoid; page-break-inside: avoid; margin-top: 20px; display: flex; border: 1px solid #000;">-->
             {% set company_details = frappe.db.get_value("Company", {"company_name": doc.company}, ["custom_bank_name",
             "custom_branch", "custom_ifsc", "custom_ac_no"], as_dict=True) %}
-
-            {% set llr = frappe.db.get_value("Delivery Stop", {"custom_sales_invoice": doc.name}, ["custom_llr"],
-            as_dict=True) %}
 
             <p>Total Amount (In Words): <strong>{{ doc.in_words }}</strong></p>
             <hr>
@@ -427,14 +465,7 @@
                     <span>Branch:{{company_details.custom_branch}}</span>
                 </div>
             </div>
-
-            {% if llr.llr %}
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <div style="text-align: left;">
-                    <span>LLR NO:{{llr.llr or ""}}</span>
-                </div>
-            </div>
-            {% endif %}
+            {%endif%}
 
             <hr>
 
@@ -469,38 +500,6 @@
             <div style="page-break-after: always;"></div>
 
             {% endfor %}
-
-            s
-            <!-- Force Page Break Before Terms & Conditions -->
-            <!--<div style="page-break-before: always;"></div>-->
-
-            <!--<div style="display: flex; border: 1px solid #000; margin-top: 20px;">-->
-            <!-- Left Side: Terms & Conditions -->
-            <!--    <div style="flex: 1; padding: 15px; border-right: 1px solid #000;">-->
-            <!--        <strong>Terms & Conditions:</strong>-->
-            <!--        <ol style="margin-top: 5px; padding-left: 20px;">-->
-            <!--            <li>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</li>-->
-            <!--            <li>Subject to Bangalore Jurisdiction</li>-->
-            <!--            <li>This is a Computer Generated Invoice</li>-->
-            <!--            <li><strong>WE ARE A SMALL ENTERPRISE UNIT REGISTERED UNDER MSME Act vide Registration Number UDYAM-KR-03-0017581</strong></li>-->
-            <!--        </ol>-->
-            <!--    </div>-->
-
-            <!-- Right Side: Authorized Signatory -->
-            <!--    <div style="flex: 0 0 300px; padding: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;">-->
-            <!--        <span>For, <strong>{{ doc.company }}</strong></span>-->
-            <!--        <br>-->
-            <!--        <span>Authorised Signatory</span>-->
-            <!--    </div>-->
-            <!--</div>-->
-
-
-
-
-
-
-
-
 
 </body>
 

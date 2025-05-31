@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    @media print {
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  {% for copy in ["Original", "Duplicate", "POD", "Security"] %}
+    <div class="copy-section">
+        <h2 style="text-align: right ;">{{ copy }} Copy</h2>
+        <!-- Header Section -->
+       
+
+    <!-- Header Section -->
+    <div class="header">
+      <img src="/files/MVD Logo1 (1).jpg" alt="Left Image" class="left-img">
+      <img src="/files/MVD Logo.jpg" alt="Right Image" class="right-img">
+      <div class="company-details">
+        <h4>DELIVERY CHALLAN</h4>
+        <h5><strong>MVD FASTENERS PRIVATE LIMITED</strong></h5>
+        <h6 class="text-center">Plot no. 308 of, Bommasandra Jigani Link Industrial Area, Jigani,</h6>
+        <h6>Bangalore - 560105, Karnataka, India</h6>
+        <h6 class="text-center">Mobile: 9483389954, Tel: 9483389954, Email: rks@mvdfasteners.com</h6>
+        <h6><strong>GST No: 29AANCM4557G1ZZ</strong></h6>
+        <h6><strong>State: Karnataka, State Code: 29</strong></h6>
+      </div>
+    </div>
+
+    <!-- Purchase Receipt Details -->
+   <table class="details-table">
+            {% set supplier_details = frappe.db.get_value("Supplier", {"name": doc.supplier},
+      ["supplier_name"], as_dict=True) %}
+    <tr>
+      <!-- BILLING ADDRESS -->
+      <td class="left">
+          
+        <h6><strong>To:</strong></h6>
+        <h6><strong>{{ doc.supplier or "" }}</strong></h6>
+        <h6><strong>{{ supplier_details.supplier_name or "" }}</strong></h6>
+        
+        {% set billing_address = frappe.get_list("Address", 
+            filters={"link_name": doc.supplier, "address_type": "Billing"}, 
+            fields=["address_line1", "address_line2", "city", "state", "pincode", "country", "phone", "mobile_no", "email_id", "gstin"], 
+            limit=1
+        ) %}
+    
+        {% if billing_address %}
+          <p>
+
+            {{ billing_address[0].address_line1 or "" }}<br>
+            {{ billing_address[0].address_line2 or "" }}<br>
+            {{ billing_address[0].city or "" }}, {{ billing_address[0].state or "" }} - {{ billing_address[0].pincode or "" }}<br>
+            {{ billing_address[0].country or "" }}
+        
+          <p><strong>Mobile:</strong> {{ billing_address[0].mobile_no or "None" }}</p>
+          <p><strong>Tel:</strong> {{ billing_address[0].phone or "None" }}</p>
+          <p><strong>Email:</strong> {{ billing_address[0].email_id or "None" }}</p>
+          <p><strong>GST No.:</strong> {{ billing_address[0].gstin or "None" }}</p>
+        {% else %}
+          <p>No Billing Address Found</p>
+        {% endif %}
+        
+        
+      </td>
+
+      <!-- SHIPPING ADDRESS -->
+      <td class="right">
+        <h6><strong>Ship To:</strong></h6>
+
+        
+       <h6><strong>{{ doc.supplier or "" }}</strong></h6>
+       <h6><strong>{{ supplier_details.supplier_name or "" }}</strong></h6>
+       <h6>
+   
+   
+        {% set billing_address = frappe.get_list("Address", 
+            filters={"link_name": doc.supplier, "address_type": "Billing" }, 
+            fields=["address_line1", "address_line2", "city", "state", "pincode", "country", "phone", "mobile_no", "email_id", "gstin"], 
+            limit=1
+        ) %}
+        {% if billing_address %}
+          <p>
+            {{ billing_address[0].address_line1 or "" }}<br>
+            {{ billing_address[0].address_line2 or "" }}<br>
+            {{ billing_address[0].city or "" }}, {{ billing_address[0].state or "" }} - {{ billing_address[0].pincode or "" }}<br>
+            {{ billing_address[0].country or "" }}
+          </p>
+          <p><strong>Mobile:</strong> {{ billing_address[0].mobile_no or "None" }}</p>
+          <p><strong>Tel:</strong> {{ billing_address[0].phone or "None" }}</p>
+          <p><strong>Email:</strong> {{ billing_address[0].email_id or "None" }}</p>
+          
+          
+        {% else %}
+          <p>No Shipping Address Found</p>
+        {% endif %}
+        
+        
+        
+        
+      </td>
+
+      <!-- DC Info (Right-Aligned) -->
+      <td class="info">
+        <h6><strong>DC No:</strong> {{ doc.name }}</h6>
+        <h6><strong>Date:</strong> {{ doc.date }}</h6>
+        <h6><strong>PO Ref No:</strong>{{ doc.po_reference_no }}</h6>
+      </td>
+    </tr>
+  </table>
+
+    <!-- Items Table -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sl No.</th>
+          <th>Product Id</th>
+          <th>Product Description <br>Batch No:</th>
+          <th>HSN Code</th>
+          <th>Location</th>
+          <th>Quantity</th>
+          <th>Service For</th>
+          <th>UOM</th>
+          <th>Rate</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in doc.items %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ item.item }}</td>
+          <td>{{ item.item_description}} <br>Batch No: {{ item.batch_no or "-" }}</td>
+          <td>{{ frappe.db.get_value("Item", item.item_code, "gst_hsn_code") or "-" }}</td>
+          <td>{{ item.target_warehouse}}</td>
+          <td>{{ item.qty }}</td>
+           <td>{{ item.server_for }}</td>
+          <td>{{ item.uom }}</td>
+          <td>0000</td>
+          <td>0000</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Footer Section -->
+    <div style="border-top: 1px solid black; margin-top: 20px; padding-top: 10px; display: flex; justify-content: space-between;">
+      <div style="width: 60%;">
+          <p><strong>Total Amount (In Words):</strong> </p>
+          <p><strong>Remarks:</strong></p>
+          <p><strong>E-Way Bill No:</strong> </p>
+          <p><strong>Vehicle No:</strong></p>
+          <p><strong>Shipping Mode:</strong></p>
+          <p>Received the Goods in Good Condition</p>
+          <p>Customer's Signature with Seal</p>
+      </div>
+      <div style="width: 40%; text-align: right;">
+          <p>For <strong>MVD FASTENERS PRIVATE LIMITED</strong></p>
+          <br><br>
+          <p></p>
+          <p>Authorised Signatory</p>
+      </div>
+    </div>
+  </div>
+
+  {% if not loop.last %}
+  <div class="page-break"></div>
+  {% endif %}
+
+  {% endfor %}
+
+</body>
+</html>

@@ -1,7 +1,10 @@
 frappe.ui.form.on("Quality Inspection", {
     before_submit: function (frm) {
         return new Promise((resolve, reject) => {
-            if (frm.doc.reference_type === "Purchase Receipt" && frm.doc.reference_name) {
+            if (
+                frm.doc.reference_type === "Purchase Receipt" &&
+                frm.doc.reference_name
+            ) {
                 frappe.call({
                     method: "frappe.client.get",
                     args: {
@@ -24,7 +27,9 @@ frappe.ui.form.on("Quality Inspection", {
                                         frm.doc.custom_is_deviation === "YES"
                                     ) {
                                         item.warehouse = wip;
-                                        item.custom_is_deviated = "YES";                                        
+                                        item.custom_is_deviated = "YES";
+                                    } else if (frm.doc.status === "Accepted" && frm.doc.custom_going_to_reject) {
+                                        item.warehouse = wip;
                                     } else if (frm.doc.status === "Rejected") {
                                         item.custom_is_deviated = "RJI";
                                         item.warehouse = rji;
@@ -44,24 +49,50 @@ frappe.ui.form.on("Quality Inspection", {
 
                         getDefaultCompanyWarehouses(frappe.session.user)
                             .then((warehouses) => {
-                                console.log("ware", warehouses);
-                                const wip = warehouses[0]?.custom_work_in_process;
-                                const rji = warehouses[0]?.custom_rejected_item;
+                                const wip = warehouses[0].custom_work_in_process;
+                                const rji = warehouses[0].custom_rejected_item;
 
-                                console.log("w", wip);
-                                console.log("r", rji);
-
-                                if (wip && rji) {
-                                    proceedWithWarehouses(wip, rji);
-                                } else {
-                                    showWarehouseDialog(); // only show if missing
+                                if (!wip || !rji) {
+                                    throw "Missing warehouse info";
                                 }
-                            })
-                            .catch((err) => {
-                                console.error("Error getting warehouse info:", err);
-                                showWarehouseDialog(); // only on actual API failure
-                            });
 
+                                proceedWithWarehouses(wip, rji);
+                            })
+                            .catch(() => {
+                                let d = new frappe.ui.Dialog({
+                                    title: "Select Warehouses",
+                                    fields: [
+                                        {
+                                            label: "Work In Progress Warehouse",
+                                            fieldname: "work_in_progress",
+                                            fieldtype: "Link",
+                                            options: "Warehouse",
+                                            reqd: 1,
+                                        },
+                                        {
+                                            label: "Rejected Items Warehouse",
+                                            fieldname: "rejected_warehouse",
+                                            fieldtype: "Link",
+                                            options: "Warehouse",
+                                            reqd: 1,
+                                        },
+                                    ],
+                                    primary_action_label: "Submit",
+                                    primary_action(values) {
+                                        d.hide();
+                                        proceedWithWarehouses(
+                                            values.work_in_progress,
+                                            values.rejected_warehouse
+                                        );
+                                    },
+                                    secondary_action_label: "Cancel",
+                                    secondary_action() {
+                                        d.hide();
+                                        reject(); // ❌ Cancel submission
+                                    },
+                                });
+                                d.show();
+                            });
                     },
                 });
             } else {
@@ -70,6 +101,7 @@ frappe.ui.form.on("Quality Inspection", {
         });
     },
 });
+
 
 function getDefaultCompanyWarehouses(user) {
     return new Promise((resolve, reject) => {
@@ -89,42 +121,5 @@ function getDefaultCompanyWarehouses(user) {
             },
         });
     });
-}
-
-
-
-function showWarehouseDialog() {
-    let d = new frappe.ui.Dialog({
-        title: "Select Warehouses",
-        fields: [
-            {
-                label: "Work In Progress Warehouse",
-                fieldname: "work_in_progress",
-                fieldtype: "Link",
-                options: "Warehouse",
-                reqd: 1,
-            },
-            {
-                label: "Rejected Items Warehouse",
-                fieldname: "rejected_warehouse",
-                fieldtype: "Link",
-                options: "Warehouse",
-                reqd: 1,
-            },
-        ],
-        primary_action_label: "Submit",
-        primary_action(values) {
-            d.hide();
-            proceedWithWarehouses(
-                values.work_in_progress,
-                values.rejected_warehouse
-            );
-        },
-        secondary_action_label: "Cancel",
-        secondary_action() {
-            d.hide();
-        },
-    });
-    d.show();
 }
 

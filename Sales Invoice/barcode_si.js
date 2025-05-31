@@ -160,14 +160,14 @@ frappe.ui.form.on('Sales Invoice', {
             <body>
                 ${Array(full_label_count).fill().map(() => `
                     <div class="label">
-                       <p><b>Customer Part No.:</b> ${item.custom_customer_part_code ?? '--'}</p>
-                        <p><b>Desc:</b> ${item.custom_customer_description ?? '--'}</p>
+                       <p><b>Customer Part No.:</b> ${item.custom_customer_part_code ??  "--" }</p>
+                        <p><b>Desc:</b> ${item.custom_customer_description ?? item.description ?? "--"}</p>
                         <p><b>Item Code:</b> ${item.item_code ?? '--'}</p>
                         <p><b>Batch No:</b> ${item.batch_no || '--'}</p>
                         <p><b>PO NO.:</b> ${po_no || '--'}</p>
                               <div class="invoice-row">
     <p><b>Invoice NO.:</b> ${frm.doc.name || '--'}</p>
-    <p><b>Invoice Date:</b> ${frm.doc.posting_date || '--'}</p>
+    <p><b>Date:</b> ${frm.doc.posting_date || '--'}</p>
 </div>
                         <p><b>Qty:</b> ${print_qty} ${item.uom || '--'}</p>
                     </div>

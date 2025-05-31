@@ -71,7 +71,7 @@ function addChildTable(frm, result_list) {
 
     const promises = result_list.map((row) => {
         if (!row.so_name) return Promise.resolve();
-        
+
         return frappe.call({
             method: 'get_so_item_details', // update path
             args: {
@@ -82,9 +82,14 @@ function addChildTable(frm, result_list) {
             const result = r.message;
             if (result && result.length > 0) {
                 console.log("result", result);
+
                 let soQty = parseFloat(result[0].qty) || 0;
                 let picked_qty = parseFloat(row.qty) || 0;
-                let pendingQty = soQty - picked_qty;
+                let delivered_qty = parseFloat(result[0].delivered_qty) || 0;
+                
+                let pendingQty = soQty - delivered_qty;
+                console.log("delivered_qty", delivered_qty);
+             
 
                 let child = frm.add_child("custom_unique_items");
                 child.custom_id = generateRandomID();

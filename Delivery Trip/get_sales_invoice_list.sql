@@ -13,6 +13,10 @@ SELECT
     si.posting_date,
     si.shipping_address,
     si.custom_temprory_ship_addr,
+    sp.contact_no_1,
+    sp.contact_no_2,
+    sp.contact_no_3,
+    sp.name AS sales_contact,
     addr.address_line1, 
     addr.address_line2, 
     addr.city, 
@@ -26,6 +30,8 @@ LEFT JOIN
     `tabAddress` addr ON addr.name = si.customer_address
 LEFT JOIN 
     `tabCustomer` cust ON cust.name = si.customer
+LEFT JOIN 
+    `tabSales Person ID` sp ON sp.name = cust.custom_sales_person_id
 WHERE 
     si.company = %s
     AND si.docstatus = 1

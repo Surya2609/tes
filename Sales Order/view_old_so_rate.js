@@ -3,7 +3,7 @@ frappe.ui.form.on('Sales Order Item', {
         console.log("pressed");
         let item = locals[cdt][cdn]; 
         if (frm.doc.customer && item.item_code) {
-            // Call the server method to get the last purchase rates when item is selected
+
             frappe.call({
                 method: 'old_so_history',  // Replace with the correct path to your method
                 args: {
@@ -15,8 +15,7 @@ frappe.ui.form.on('Sales Order Item', {
                         let data = r.message;  // Assign response to 'data'
                         console.log("--", data);  // Debugging output
                         dn_dialogue_fetch(item, data, frm);
-                        // You can also update other fields or show messages
-                        // dn_dialogue_fetch(item, data, frm);  // Show the rates in the dialog
+ 
                     }
                 }
             });

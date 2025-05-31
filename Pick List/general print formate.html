@@ -44,60 +44,29 @@
                 <h6><strong>Bill To,</strong></h6>
                 <h6><strong>{{ doc.customer or "" }}</strong></h6>
                 <h6><strong>{{ doc.customer_name or "" }}</strong></h6>
-                <!-- {% set billing_address = frappe.get_list("Address",
-                filters={"link_name": doc.customer, "address_type": "Billing"},
-                fields=["address_line1", "address_line2", "city", "state", "pincode", "country", "phone", "mobile_no",
-                "email_id", "gstin"],
-                limit=1
-                ) %}
 
-                {% if billing_address %}
-                <p style="font-size: 12px;">
-                    {{ billing_address[0].address_line1 or "" }},<br>
-                    {{ billing_address[0].address_line2 or "" }},<br>
-                    {{ billing_address[0].city or "" }},
-                    {{ billing_address[0].state or "" }},
-                    {{ billing_address[0].pincode or "" }},
-                    {{ billing_address[0].country or "" }}
-                </p>
-                <h6>
-                    <p><strong>Mobile:</strong> {{ billing_address[0].mobile_no or "None" }}</p>
-                    <p><strong>Tel:</strong> {{ billing_address[0].phone or "None" }}</p>
-                    <p><strong>Email:</strong> {{ billing_address[0].email_id or "None" }}</p>
-                    <p><strong>GST No.:</strong> {{ billing_address[0].gstin or "None" }}</p>
-                </h6>
-
+                {% set fields = [doc.custom_mode_of_shipment, doc.custom_type, doc.custom_payment,
+                doc.custom_godown_name] %}
+                {% set non_empty = [] %}
+                {% for f in fields %}
+                {% if f %}
+                {% set _ = non_empty.append(f) %}
                 {% endif %}
+                {% endfor %}
+                <h6>MOS: {{ non_empty | join(' , ') }}</h6>
 
-
-                <h6><strong>Ship To,</strong></h6>
-                <h6><strong>{{ doc.customer or "" }}</strong></h6>
-                {% set billing_address = frappe.get_list("Address",
-                filters={"link_name": doc.customer, "address_type": "Billing"},
-                fields=["address_line1", "address_line2", "city", "state", "pincode", "country", "phone", "mobile_no",
-                "email_id", "gstin"],
-                limit=1
-                ) %}
-
-                {% if billing_address %}
-                <p style="font-size: 12px;">
-                    {{ billing_address[0].address_line1 or "" }},<br>
-                    {{ billing_address[0].address_line2 or "" }},<br>
-                    {{ billing_address[0].city or "" }},
-                    {{ billing_address[0].state or "" }},
-                    {{ billing_address[0].pincode or "" }},
-                    {{ billing_address[0].country or "" }}
-                </p>
-                <h6>
-                    <p><strong>Mobile:</strong> {{ billing_address[0].mobile_no or "None" }}</p>
-                    <p><strong>Tel:</strong> {{ billing_address[0].phone or "None" }}</p>
-                    <p><strong>Email:</strong> {{ billing_address[0].email_id or "None" }}</p>
-                    <p><strong>GST No.:</strong> {{ billing_address[0].gstin or "None" }}</p>
-                </h6> -->
-
+                {% set po_number_set = [] %}
+                {% for loc in doc.locations %}
+                {% set so = frappe.db.get_value("Sales Order", loc.sales_order, "po_no") %}
+                {% if so and so not in po_number_set %}
+                {% set _ = po_number_set.append(so) %}
                 {% endif %}
+                {% endfor %}
+
+                <h6>PO NO: {{ po_number_set | join(", ") if po_number_set else "N/A" }}</h6>
+
             <td class="text-justify">
-                <h6>PICK ID:  {{ doc.name or "-" }}</h6>
+                <h6>PICK ID: {{ doc.name or "-" }}</h6>
                 <h6>
                     SO NO:
                     {% set so_no = [] %}
@@ -135,10 +104,14 @@
                     {{ due_dates_list | join(", ") if due_dates_list else "N/A" }}
                 </h6>
                 </h6>
-                <h6>Currency : INR</h6>
+
+
+
+
             </td>
         </tr>
     </table>
+
 
     <!-- Items Table -->
     <table class="table">
@@ -150,8 +123,9 @@
                 <th>Location</th>
                 <th>Stock Qty</th>
                 <th>Batch No</th>
-                <th>Picked Qty</th>
                 <th>SO Pending Qty</th>
+                <th>Picked Qty</th>
+
             </tr>
         </thead>
         <tbody>
@@ -175,10 +149,13 @@
                 <td>{{ item.warehouse }}</td>
                 <td>{{ item.stock_qty }} {{ item.stock_uom }}</td>
                 <td>{{ item.batch_no }}</td>
-                <td>{{ item.picked_qty }} {{ item.uom }}</td>
                 <td>{{ item.pending_qty }} {{ item.uom }}</td>
+                <td>{{ item.picked_qty }} {{ item.uom }}</td>
+
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+
 </body>
