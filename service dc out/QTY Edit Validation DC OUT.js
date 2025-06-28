@@ -30,9 +30,10 @@ frappe.ui.form.on('Service DC OUT Items', {
 
 function show_stock_details(item, row, frm) {
     frappe.call({
-        method: 'get_product_details', // Replace with your server-side method for fetching PR history data
+       method: 'get_product_details_new', // Replace with your server-side method for fetching PR history data
         args: {
-            item_code: item // Pass necessary arguments
+            item_code: item,
+            company: frm.doc.company
         },
         callback: function (r) {
             if (r.message && r.message.length > 0) {

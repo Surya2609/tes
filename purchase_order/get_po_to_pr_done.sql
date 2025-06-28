@@ -14,3 +14,5 @@ GROUP BY
 """, (purchase_order,), as_dict=1)
 
 frappe.response['message'] = details
+
+

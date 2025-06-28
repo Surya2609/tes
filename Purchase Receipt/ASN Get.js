@@ -81,10 +81,7 @@ function open_asn_details(data, frm) {
                                 </tr>`;
         }).join('')}
                     </tbody>
-                </table>
-                <div style="text-align:right; margin-top: 10px;">
-                    <button class="btn btn-primary" id="asn-ok-btn">OK</button>
-                </div>
+                </table>                
             </div>
         `;
         dialog.fields_dict.rates.$wrapper.html(html);
@@ -129,10 +126,10 @@ function open_asn_details(data, frm) {
 
             let unlinkedItems = [];
 
-            for (let i = 0; i < selectedRows.length; i++)  {
+            for (let i = 0; i < selectedRows.length; i++) {
                 try {
                     let result = await checkLinkedPr(selectedRows[i]);
-
+                    console.log("linked", result);
                     if (!result.linked) {
                         unlinkedItems.push(result.item);
                     } else {
@@ -167,6 +164,9 @@ function open_asn_details(data, frm) {
             frm.reload_doc(); // Refresh only once after loop
         });
 
+
+
+
     }
 
     function applyFilters() {
@@ -196,22 +196,36 @@ function open_asn_details(data, frm) {
 }
 
 async function checkLinkedPr(selectedData) {
+    console.log("sel data", selectedData);
     if (!selectedData.po_no) {
         return { linked: false, item: selectedData.item };
     }
 
-    const result = await frappe.db.get_list('Purchase Receipt Item', {
-        filters: {
+
+    const result = await frappe.call({
+        method: 'get_is_asn_items_in_pr',
+        args: {
             purchase_order: selectedData.po_no,
             item_code: selectedData.item,
             rate: selectedData.rate
-        },
-        fields: ['item_code', 'parent'],
-        limit: 1
+        }
     });
+ 
+    // const result = await frappe.db.get_list('Purchase Receipt Item', {
+    //     filters: {
+    //         purchase_order: selectedData.po_no,
+    //         item_code: selectedData.item,
+    //         rate: selectedData.rate
+    //     },
+    //     fields: ['item_code', 'parent'],
+    //     limit: 1
+    // });
 
-    if (result.length > 0) {
-        return { linked: true, parent: result[0].parent };
+
+
+    console.log("resulttt", result.message);
+    if (result.message.length > 0) {
+        return { linked: true, parent: result.message[0].parent };
     } else {
         return { linked: false, item: selectedData.item };
     }
@@ -242,3 +256,5 @@ async function updateAsnAndPr(selectedData, result) {
 function generateUUID() {
     return Math.random().toString(36).substr(2, 10);
 }
+
+

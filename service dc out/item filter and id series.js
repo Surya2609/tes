@@ -3,7 +3,6 @@ frappe.ui.form.on('Service DC OUT', {
         if (frm.is_new()) {
             apply_series_filter(frm);      
        }
-
     },
 });
 

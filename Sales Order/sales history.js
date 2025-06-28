@@ -1,8 +1,8 @@
 frappe.ui.form.on('Sales Order Item', {
-
+    // Trigger when the 'item_code' field is set (when an item is selected)
     custom_view: function (frm, cdt, cdn) {
         console.log("pressed");
-        let item = locals[cdt][cdn]; 
+        let item = locals[cdt][cdn];  // Correctly fetch the child table row
         if (frm.doc.customer && item.item_code) {
             // Call the server method to get the last purchase rates when item is selected
             frappe.call({
@@ -15,13 +15,12 @@ frappe.ui.form.on('Sales Order Item', {
                         let data = r.message;  // Assign response to 'data'
                         console.log("--", data);  // Debugging output
                         // You can also update other fields or show messages
-                        dn_dialogue_fetch(item, data, frm);  // Show the rates in the dialog
+                        dn_dialogue_fetch(item, data, frm);  // Show the rates in the dialog                        
                     }
                 }
             });
         }
     }
-
 });
 
 // Function to display the rates in a dialog
@@ -106,7 +105,7 @@ function dn_dialogue_fetch(item, data, frm) {
     // Add event listeners for left buttons
     dn_dialogue.$wrapper.find('.so-history-btn').on('click', function () {
         dn_dialogue.hide();
-        fetch_so_history(dn_dialogue, item);
+        fetch_so_history(dn_dialogue, item, frm);
     });
 
     dn_dialogue.$wrapper.find('.product-details-btn').on('click', function () {
@@ -141,11 +140,13 @@ function dn_dialogue_fetch(item, data, frm) {
 
 
 
-function fetch_so_history(dn_dialogue, item) {
+function fetch_so_history(dn_dialogue, item, frm) {
+    console.log("customer",frm.doc.customer);
     frappe.call({
         method: 'get_salesorder_history',  // Replace with your server-side method for fetching PR history data
         args: {
-            item_code: item.item_code // Pass necessary arguments
+            item_code: item.item_code,
+            customer: frm.doc.customer
         },
         callback: function (r) {
             if (r.message) {
@@ -159,20 +160,23 @@ function fetch_so_history(dn_dialogue, item) {
                              <thead>
                                  <tr style="background-color: #f9f9f9;">
                                      <th style="padding: 10px; width: 200px;">Sales Order</th>
-                                     <th style="padding: 10px; width: 200px;">Customer</th>
+                                     <th style="padding: 10px; width: 150px;">SO Qty</th>
+                                     <th style="padding: 10px; width: 150px;">Delivered Qty</th>
+                                     
                                      <th style="padding: 10px; width: 150px;">Date</th>
                                      <th style="padding: 10px; width: 150px;">Rate</th>
-                                     <th style="padding: 10px; width: 150px;">Quantity</th>
+                                     <th style="padding: 10px; width: 200px;">Customer</th>
                                  </tr>
                              </thead>
                              <tbody>
                                  ${data.map((record, index) => `
                                      <tr id="row-${index}" class="table-row" style="cursor: pointer;">
                                          <td style="padding: 10px;">${record.name || ''}</td>
-                                         <td style="padding: 10px;">${record.customer || ''}</td>
+                                         <td style="padding: 10px;">${record.qty || ''}</td>
+                                         <td style="padding: 10px;">${record.delivered_qty || ''}</td>
                                          <td style="padding: 10px;">${record.transaction_date || ''}</td>
                                           <td style="padding: 10px;" data-rate="${record.rate || ''}">${record.rate || ''}</td>
-                                         <td style="padding: 10px;">${record.qty || ''}</td>
+                                         <td style="padding: 10px;">${record.customer || ''}</td>
                                      </tr>`).join('')}
                              </tbody>
                          </table>
@@ -230,17 +234,21 @@ function fetch_so_history(dn_dialogue, item) {
     </div>
 `;
 
+                // Append the custom footer to the dialog
                 so_dialogue.$wrapper.find('.frappe-control[data-fieldname="rates"]').append(customFooter);
 
+                // Add event listeners for left buttons
                 so_dialogue.$wrapper.find('.dn-history-btn').on('click', function () {
                     so_dialogue.hide();
                     dn_dialogue.show();
                 });
 
+                // Add event listeners for right buttons
                 so_dialogue.$wrapper.find('.ok-btn').on('click', function () {
 
                     if (selectedRow) {
 
+                        // Get the rate from the selected row
                         let selectedRate = $(selectedRow).find('td[data-rate]').data('rate');
                         if (selectedRate) {
                             frappe.model.set_value(item.doctype, item.name, 'rate', selectedRate);
@@ -256,14 +264,15 @@ function fetch_so_history(dn_dialogue, item) {
                 so_dialogue.show();
             }
         }
-    });
+    }
+    );
 }
 
 function fetch_more_details(dn_dialogue, item, frm) {
     frappe.call({
-        method: 'get_customer_part',
+        method: 'get_customer_part', // Updated method
         args: {
-            item_code: item.item_code,
+            item_code: item.item_code, // Pass necessary arguments
             customer: frm.doc.customer
         },
         callback: function (r) {
