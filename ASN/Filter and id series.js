@@ -3,7 +3,6 @@ frappe.ui.form.on('Advance Shipment Notice', {
         if (frm.is_new()) {
             apply_series_filter(frm);
        }
-
     },
 });
 

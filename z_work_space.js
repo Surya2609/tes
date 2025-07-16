@@ -1,56 +1,266 @@
-### App Versions
-```
-{
-	"erpnext": "15.50.0",
-	"frappe": "15.54.1",
-	"hrms": "16.0.0-dev",
-	"india_compliance": "15.15.0",
-	"payments": "0.0.1",
-	"webshop": "0.0.1"
-}
-```
-### Route
-```
-Form/Sales Order/SO/MV/25-26-03220
-```
-### Traceback
-```
-Traceback (most recent call last):
-  File "apps/frappe/frappe/app.py", line 114, in application
-    response = frappe.api.handle(request)
-  File "apps/frappe/frappe/api/__init__.py", line 49, in handle
-    data = endpoint(**arguments)
-  File "apps/frappe/frappe/api/v1.py", line 36, in handle_rpc_call
-    return frappe.handler.handle()
-  File "apps/frappe/frappe/handler.py", line 50, in handle
-    data = execute_cmd(cmd)
-  File "apps/frappe/frappe/handler.py", line 86, in execute_cmd
-    return frappe.call(method, **frappe.form_dict)
-  File "apps/frappe/frappe/__init__.py", line 1726, in call
-    return fn(*args, **newargs)
-  File "apps/frappe/frappe/utils/typing_validations.py", line 31, in wrapper
-    return func(*args, **kwargs)
-TypeError: get_item_details() missing 1 required positional argument: 'args'
+frappe.ui.form.on('Advance Shipment Notice', {
+    refresh: function (frm) {
+        frm.add_custom_button('Get Items', () => {
+            if (frm.doc.supplier && frm.doc.company) {
+                frappe.call({
+                    method: 'get_po_items_detalils',
+                    args: {
+                        company: frm.doc.company,
+                        supplier: frm.doc.supplier
+                    },
+                    callback: function (r) {
+                        console.log("r data", r.message);
+                        if (r.message) {
+                            open_purchase_orders(r.message, frm);
+                        }
+                    }
+                });
+            } else {
+                frappe.msgprint("Please Select Company and Supplier");
+            }
+        });
+    },
+});
 
-```
-### Request Data
-```
-{
-	"type": "POST",
-	"args": {
-		"doc": "{\"name\":\"SO/MV/25-26-03220\",\"owner\":\"Administrator\",\"creation\":\"2025-05-28 13:08:38.531599\",\"modified\":\"2025-05-28 13:32:22.946519\",\"modified_by\":\"Administrator\",\"docstatus\":1,\"idx\":1,\"title\":\"{customer_name}\",\"naming_series\":\"SO/MV/25-26-\",\"customer\":\"CUST1\",\"customer_name\":\"SCHNEIDER ELECTRIC PRESIDENT SYSTEMS LTD\",\"custom_sales_person_id\":\"MV0005\",\"order_type\":\"Sales\",\"custom_order_status\":\"\",\"transaction_date\":\"2025-05-28\",\"delivery_date\":\"2025-05-28\",\"custom_payment\":\"\",\"custom_payment_terms\":\"\",\"po_no\":\"testing12334esckdn\",\"po_date\":\"2025-05-28\",\"company\":\"MVD FASTENERS PRIVATE LIMITED\",\"custom_type\":\"\",\"skip_delivery_note\":0,\"is_reverse_charge\":0,\"is_export_with_gst\":0,\"currency\":\"INR\",\"conversion_rate\":1,\"selling_price_list\":\"Standard Selling\",\"price_list_currency\":\"INR\",\"plc_conversion_rate\":1,\"ignore_pricing_rule\":0,\"set_warehouse\":\"All Warehouses - MVDF\",\"reserve_stock\":0,\"total_qty\":10,\"total_net_weight\":0,\"base_total\":30,\"base_net_total\":30,\"total\":30,\"custom_shipping_charges\":0,\"custom_shipping_tax\":0,\"custom_tax_amt_\":0,\"net_total\":30,\"tax_category\":\"In-State\",\"taxes_and_charges\":\"Output GST In-state - MVDF\",\"base_total_taxes_and_charges\":5.4,\"total_taxes_and_charges\":5.4,\"base_grand_total\":35.4,\"base_rounding_adjustment\":-0.4,\"base_rounded_total\":35,\"base_in_words\":\"INR Thirty Five only.\",\"grand_total\":35.4,\"rounding_adjustment\":-0.4,\"rounded_total\":35,\"in_words\":\"INR Thirty Five only.\",\"advance_paid\":0,\"disable_rounded_total\":0,\"apply_discount_on\":\"Grand Total\",\"base_discount_amount\":0,\"additional_discount_percentage\":0,\"discount_amount\":0,\"other_charges_calculation\":\"<div class=\\\"tax-break-up\\\" style=\\\"overflow-x: auto;\\\">\\n\\t<table class=\\\"table table-bordered table-hover\\\">\\n\\t\\t<thead>\\n\\t\\t\\t<tr>\\n\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t<th class=\\\"text-left\\\">HSN/SAC</th>\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t<th class=\\\"text-right\\\">Taxable Amount</th>\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t<th class=\\\"text-right\\\">Output Tax SGST</th>\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t<th class=\\\"text-right\\\">Output Tax CGST</th>\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\n\\t\\t\\t</tr>\\n\\t\\t</thead>\\n\\t\\t<tbody>\\n\\t\\t\\t\\n\\t\\t\\t\\t<tr>\\n\\t\\t\\t\\t\\t<td>72173010</td>\\n\\t\\t\\t\\t\\t<td class=\\\"text-right\\\">\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t₹ 30.0000\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t</td>\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t<td class=\\\"text-right\\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t(9.0%)\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t₹ 2.7000\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t</td>\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t<td class=\\\"text-right\\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t(9.0%)\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t₹ 2.7000\\n\\t\\t\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\t\\t</td>\\n\\t\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t\\t\\n\\t\\t\\t\\t</tr>\\n\\t\\t\\t\\n\\t\\t</tbody>\\n\\t</table>\\n</div>\",\"gst_breakup_table\":\"<div class=\\\"tax-break-up\\\" style=\\\"overflow-x: auto\\\"><table class=\\\"table table-bordered table-hover\\\"><thead><tr><th class=\\\"text-left\\\">HSN/SAC</th><th class=\\\"text-right\\\">Taxable Amount</th><th class=\\\"text-right\\\">CGST</th><th class=\\\"text-right\\\">SGST</th></tr></thead><tbody><tr><td class=\\\"text-left\\\">72173010</td><td class=\\\"text-right\\\">₹ 30.0000</td><td class=\\\"text-right\\\">(9.0%)&nbsp;₹ 2.7000</td><td class=\\\"text-right\\\">(9.0%)&nbsp;₹ 2.7000</td></tr></tbody></table></div>\",\"customer_address\":\"CUST1\",\"address_display\":\"PLOT 5C/1, KIADB INDUSTRIAL AREA,,<br>ATTIBELE<br>Bengaluru<br>\\nKarnataka, State Code: 29<br>PIN Code: 562107<br>India<br>\\nPhone: 8789726473<br>Email: souravi.singha@se.com<br>GSTIN: 29AADCA1163G1ZX<br>\",\"billing_address_gstin\":\"29AADCA1163G1ZX\",\"gst_category\":\"Registered Regular\",\"place_of_supply\":\"29-Karnataka\",\"customer_group\":\"MVDF GROUP\",\"contact_person\":\"SCHNEIDER ELECTRIC PRESIDENT SYSTEMS LTD-CUST1\",\"contact_display\":\"SCHNEIDER ELECTRIC PRESIDENT SYSTEMS LTD\",\"contact_phone\":\"\",\"contact_mobile\":\"8789726473\",\"contact_email\":\"souravi.singha@se.com\",\"shipping_address_name\":\"CUST1\",\"shipping_address\":\"PLOT 5C/1, KIADB INDUSTRIAL AREA,,<br>ATTIBELE<br>Bengaluru<br>\\nKarnataka, State Code: 29<br>PIN Code: 562107<br>India<br>\\nPhone: 8789726473<br>Email: souravi.singha@se.com<br>GSTIN: 29AADCA1163G1ZX<br>\",\"custom_temprory_ship_addr\":\"PLOT 5C/1, KIADB INDUSTRIAL AREA,,<br>ATTIBELE<br>Bengaluru<br>\\nKarnataka, State Code: 29<br>PIN Code: 562107<br>India<br>\\nPhone: 8789726473<br>Email: souravi.singha@se.com<br>GSTIN: 29AADCA1163G1ZX<br>\",\"company_address\":\"MVD FASTENERS PRIVATE LIMITED-Billing-8\",\"company_gstin\":\"29AANCM4557G1ZZ\",\"company_address_display\":\"Plot No. 308<br>Jigani Link Road, Jigani Hobli, Bengaluru<br>Bengaluru Urban<br>\\nKarnataka, State Code: 29<br>PIN Code: 560105<br>India<br>\\nGSTIN: 29AANCM4557G1ZZ<br>\",\"status\":\"To Deliver and Bill\",\"delivery_status\":\"Not Delivered\",\"per_delivered\":0,\"per_billed\":0,\"per_picked\":0,\"billing_status\":\"Not Billed\",\"amount_eligible_for_commission\":30,\"commission_rate\":0,\"total_commission\":0,\"loyalty_points\":0,\"loyalty_amount\":0,\"letter_head\":\"Sales Pending  Report\",\"group_same_items\":0,\"language\":\"en\",\"is_internal_customer\":0,\"party_account_currency\":\"INR\",\"ecommerce_supply_type\":null,\"doctype\":\"Sales Order\",\"payment_schedule\":[{\"name\":\"vnauvgnu7a\",\"owner\":\"Administrator\",\"creation\":\"2025-05-28 13:08:38.988633\",\"modified\":\"2025-05-28 13:32:22.946519\",\"modified_by\":\"Administrator\",\"docstatus\":1,\"idx\":1,\"due_date\":\"2025-05-28\",\"invoice_portion\":100,\"discount\":0,\"payment_amount\":35,\"outstanding\":35,\"paid_amount\":0,\"discounted_amount\":0,\"base_payment_amount\":35,\"parent\":\"SO/MV/25-26-03220\",\"parentfield\":\"payment_schedule\",\"parenttype\":\"Sales Order\",\"doctype\":\"Payment Schedule\"}],\"taxes\":[{\"name\":\"kgc35jka39\",\"owner\":\"Administrator\",\"creation\":\"2025-05-28 13:08:38.531599\",\"modified\":\"2025-05-28 13:32:22.946519\",\"modified_by\":\"Administrator\",\"docstatus\":1,\"idx\":1,\"charge_type\":\"On Net Total\",\"row_id\":\"\",\"account_head\":\"Output Tax SGST - MVDF\",\"description\":\"Output Tax SGST\",\"included_in_print_rate\":0,\"included_in_paid_amount\":0,\"cost_center\":\"Main - MVDF\",\"rate\":9,\"gst_tax_type\":\"sgst\",\"tax_amount\":2.7,\"total\":32.7,\"tax_amount_after_discount_amount\":2.7,\"base_tax_amount\":2.7,\"base_total\":32.7,\"base_tax_amount_after_discount_amount\":2.7,\"item_wise_tax_detail\":\"{\\\"Testing Code 1\\\":[9.0,2.6999999999999997]}\",\"dont_recompute_tax\":0,\"parent\":\"SO/MV/25-26-03220\",\"parentfield\":\"taxes\",\"parenttype\":\"Sales Order\",\"doctype\":\"Sales Taxes and Charges\"},{\"name\":\"6jflfphkjk\",\"owner\":\"Administrator\",\"creation\":\"2025-05-28 13:08:38.531599\",\"modified\":\"2025-05-28 13:32:22.946519\",\"modified_by\":\"Administrator\",\"docstatus\":1,\"idx\":2,\"charge_type\":\"On Net Total\",\"row_id\":\"\",\"account_head\":\"Output Tax CGST - MVDF\",\"description\":\"Output Tax CGST\",\"included_in_print_rate\":0,\"included_in_paid_amount\":0,\"cost_center\":\"Main - MVDF\",\"rate\":9,\"gst_tax_type\":\"cgst\",\"tax_amount\":2.7,\"total\":35.4,\"tax_amount_after_discount_amount\":2.7,\"base_tax_amount\":2.7,\"base_total\":35.4,\"base_tax_amount_after_discount_amount\":2.7,\"item_wise_tax_detail\":\"{\\\"Testing Code 1\\\":[9.0,2.6999999999999997]}\",\"dont_recompute_tax\":0,\"parent\":\"SO/MV/25-26-03220\",\"parentfield\":\"taxes\",\"parenttype\":\"Sales Order\",\"doctype\":\"Sales Taxes and Charges\"}],\"packed_items\":[],\"pricing_rules\":[],\"items\":[{\"name\":\"oslgivpfii\",\"owner\":\"Administrator\",\"creation\":\"2025-05-28 13:08:38.531599\",\"modified\":\"2025-05-28 13:32:22.946519\",\"modified_by\":\"Administrator\",\"docstatus\":1,\"idx\":1,\"item_code\":\"Testing Code 1\",\"qty\":10,\"custom_unit_rate\":3,\"rate\":3,\"custom_discount_type\":\"Percentage\",\"custom_discount_percent\":0,\"custom_discount_amt\":0,\"item_name\":\"Testing Code 1\",\"uom\":\"Nos\",\"amount\":30,\"delivery_date\":\"2025-05-28\",\"conversion_factor\":1,\"stock_qty\":10,\"stock_uom\":\"Nos\",\"margin_type\":\"Amount\",\"margin_rate_or_amount\":2,\"rate_with_margin\":0,\"base_rate_with_margin\":0,\"discount_amount\":-2,\"discount_percentage\":0,\"igst_rate\":0,\"cgst_rate\":9,\"sgst_rate\":9,\"cess_rate\":0,\"cess_non_advol_rate\":0,\"igst_amount\":0,\"cgst_amount\":2.7,\"sgst_amount\":2.7,\"cess_amount\":0,\"cess_non_advol_amount\":0,\"billed_amt\":0,\"valuation_rate\":0,\"gross_profit\":10,\"gst_treatment\":\"Taxable\",\"base_rate\":3,\"base_amount\":30,\"pricing_rules\":\"\",\"stock_uom_rate\":1,\"is_free_item\":0,\"grant_commission\":1,\"reserve_stock\":0,\"ensure_delivery_based_on_produced_serial_no\":0,\"is_stock_item\":1,\"stock_reserved_qty\":0,\"description\":\"Testing Code 1\",\"gst_hsn_code\":\"72173010\",\"item_group\":\"Finished Goods\",\"image\":\"\",\"price_list_rate\":1,\"base_price_list_rate\":1,\"net_rate\":3,\"net_amount\":30,\"base_net_rate\":3,\"base_net_amount\":30,\"taxable_value\":30,\"delivered_by_supplier\":0,\"weight_per_unit\":0,\"total_weight\":0,\"warehouse\":\"All Warehouses - MVDF\",\"against_blanket_order\":0,\"blanket_order_rate\":0,\"actual_qty\":82,\"company_total_stock\":103,\"projected_qty\":1079,\"ordered_qty\":0,\"planned_qty\":0,\"production_plan_qty\":0,\"work_order_qty\":0,\"delivered_qty\":0,\"produced_qty\":0,\"returned_qty\":0,\"picked_qty\":0,\"page_break\":0,\"item_tax_rate\":\"{}\",\"transaction_date\":\"2025-05-28\",\"parent\":\"SO/MV/25-26-03220\",\"parentfield\":\"items\",\"parenttype\":\"Sales Order\",\"doctype\":\"Sales Order Item\"}],\"sales_team\":[],\"__onload\":{\"make_payment_via_journal_entry\":0},\"__last_sync_on\":\"2025-05-28T12:01:36.164Z\"}",
-		"ctx": "{\"item_code\":\"Test5\",\"set_warehouse\":\"All Warehouses - MVDF\",\"customer\":\"CUST1\",\"currency\":\"INR\",\"is_internal_customer\":0,\"conversion_rate\":1,\"price_list\":\"Standard Selling\",\"price_list_currency\":\"INR\",\"plc_conversion_rate\":1,\"company\":\"MVD FASTENERS PRIVATE LIMITED\",\"order_type\":\"Sales\",\"is_pos\":0,\"is_return\":0,\"ignore_pricing_rule\":0,\"doctype\":\"Sales Order\",\"name\":\"SO/MV/25-26-03220\",\"qty\":1,\"pos_profile\":\"\",\"tax_category\":\"In-State\",\"child_doctype\":\"Sales Order Item\"}"
-	},
-	"headers": {},
-	"error_handlers": {},
-	"url": "/api/method/erpnext.stock.get_item_details.get_item_details",
-	"request_id": null
+function open_purchase_orders(data, frm) {
+    let selectedRowState = {}; // Track selection & qty by unique key
+
+    function getRowKey(record) {
+        return `${record.name}__${record.item_code}`;
+    }
+
+    const fields = [
+        {
+            label: 'Purchase Order',
+            fieldname: 'invoice_name_filter',
+            fieldtype: 'Link',
+            options: 'Purchase Order',
+        },
+        { fieldtype: 'Column Break' },
+        {
+            label: 'Item Code',
+            fieldname: 'item_code_filter',
+            fieldtype: 'Link',
+            options: 'Item',
+        },
+        { fieldtype: 'Section Break' },
+        {
+            fieldname: 'rates',
+            fieldtype: 'HTML',
+            label: 'Results',
+        }
+    ];
+
+    const dialog = new frappe.ui.Dialog({
+        title: 'Purchase Orders',
+        size: 'extra-large',
+        fields: fields,
+    });
+
+    function renderTable(records) {
+        const html = `
+            <div style="overflow-x:auto; max-height:400px; border:1px solid #ddd; padding:10px;">
+                <table class="table table-bordered" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>PO Name</th>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Qty</th>
+                            
+                            <th>PO</th>
+                            <th>ASN</th>
+                            <th>POR</th>
+                            <th>UOM</th>
+                            
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${records.map((row) => {
+            const key = getRowKey(row);
+            const state = selectedRowState[key] || {};
+            const isChecked = state.checked ? 'checked' : '';
+            const qty = state.pending_qty !== undefined ? state.pending_qty : row.pending_qty;
+
+            return `
+                                <tr>
+                                    <td><input type="checkbox" class="row-selector" data-key="${key}" ${isChecked}></td>
+                                    <td>${row.name}</td>
+                                    <td>${row.item_code}</td>
+                                    <td>${row.item_name}</td>
+                                     <td>${row.pending_qty}</td>
+                                     
+                                     <td>${row.po_qty}</td>
+                                     <td>${row.transit_qty}</td>
+                                     <td>${row.grn_qty}</td>
+                                     <td>${row.uom}</td>
+                                   
+                                    <td>${row.rate}</td>
+                                </tr>
+                            `;
+        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        dialog.fields_dict.rates.$wrapper.html(html);
+
+        // Event bindings
+        dialog.$wrapper.find('.row-selector').on('change', function () {
+            const key = $(this).data('key');
+            selectedRowState[key] = selectedRowState[key] || {};
+            selectedRowState[key].checked = $(this).is(':checked');
+        });
+
+        dialog.$wrapper.find('.editable-qty').on('input', function () {
+            const key = $(this).data('key');
+            const qty = parseFloat($(this).val());
+            selectedRowState[key] = selectedRowState[key] || {};
+            selectedRowState[key].qty = qty;
+        });
+    }
+
+    function renderFooter() {
+        const footer = `
+            <div style="text-align:right; margin-top:20px;">
+                <button class="btn btn-primary ok-btn">OK</button>
+            </div>
+        `;
+        dialog.fields_dict.rates.$wrapper.append(footer);
+
+        dialog.$wrapper.find('.ok-btn').off('click').on('click', async function () {
+            const selectedRows = [];
+
+            data.forEach((row) => {
+                const key = getRowKey(row);
+                const state = selectedRowState[key];
+                if (state?.checked) {
+                    const qty = state.pending_qty !== undefined ? state.pending_qty : row.pending_qty;
+                    if (qty > row.pending_qty) {
+                        frappe.msgprint(`Qty for PO ${row.name} cannot exceed ${row.qty}`);
+                        return;
+                    }
+                    selectedRows.push({ ...row, qty });
+                }
+            });
+
+            if (selectedRows.length > 0) {
+                console.log("selected rs", selectedRows);
+
+
+                //  selectedRows.forEach((record) => {
+                //      console.log("rec",record);
+                //         let emptyRow = frm.doc.items.find(row => !row.item);
+                //         if (emptyRow) {
+                //          await   updateFieldsAsn(emptyRow, record);
+                //         } else {
+                //             let newRow = frm.add_child('items');
+                //           await updateFieldsAsn(newRow, record);
+                //         }
+                //     });
+
+                for (const record of selectedRows) {
+                    console.log("records",record);
+                    let emptyRow = frm.doc.items.find(row => !row.item);
+                    if (emptyRow) {
+                        await updateFieldsAsn(emptyRow, record);
+                    } else {
+                        let newRow = frm.add_child('items');
+                        await updateFieldsAsn(newRow, record);
+                    }
+                }
+
+                frm.refresh_field('items');
+                dialog.hide();
+            } else {
+                frappe.msgprint("Please select at least one row.");
+            }
+        });
+
+        // dialog.$wrapper.find('.ok-btn').off('click').on('click', async function () {
+        //     const selectedRows = [];
+
+        //     data.forEach((row) => {
+        //         const key = getRowKey(row);
+        //         const state = selectedRowState[key];
+        //         if (state?.checked) {
+        //             const qty = state.qty !== undefined ? state.qty : row.qty;
+        //             if (qty > row.qty) {
+        //                 frappe.msgprint(`Qty for PO ${row.name} cannot exceed ${row.qty}`);
+        //                 return;
+        //             }
+        //             selectedRows.push({ ...row, qty });
+        //         }
+        //     });
+
+        //     if (selectedRows.length > 0) {
+        //         console.log("selected rs", selectedRows);
+
+        //         selectedRows.forEach((record) => {
+
+        //             let emptyRow = frm.doc.items.find(row => !row.item_code);
+        //             if (emptyRow) {
+        //                 await updateFieldsAsn(emptyRow, record);
+        //             } else {
+        //                 let newRow = frm.add_child('items');
+        //                 await updateFieldsAsn(newRow, record);
+        //             }
+        //         });
+        //         frm.refresh_field('items');
+        //         dialog.hide();
+        //     } else {
+        //         frappe.msgprint("Please select at least one row.");
+        //     }
+        // });
+    }
+
+    function applyFilters() {
+        const poFilter = dialog.fields_dict.invoice_name_filter.$wrapper.find('input').val()?.toLowerCase() || '';
+        const itemFilter = dialog.fields_dict.item_code_filter.$wrapper.find('input').val()?.toLowerCase() || '';
+
+        const filtered = data.filter((row) =>
+            row.name.toLowerCase().includes(poFilter) &&
+            row.item_code.toLowerCase().includes(itemFilter)
+        );
+
+        renderTable(filtered);
+        renderFooter();
+    }
+
+    // Initial render
+    renderTable(data);
+    renderFooter();
+    dialog.show();
+    setTimeout(() => {
+        document.activeElement.blur();
+    }, 100);
+
+    // Attach filter input handlers
+    dialog.fields_dict.invoice_name_filter.$wrapper.find('input').on('input', applyFilters);
+    dialog.fields_dict.item_code_filter.$wrapper.find('input').on('input', applyFilters);
 }
-```
-### Response Data
-```
-{
-	"exception": "TypeError: get_item_details() missing 1 required positional argument: 'args'",
-	"exc_type": "TypeError"
+
+async function updateFieldsAsn(row, record) {
+    console.log("gst", record.gst_treatment);
+    await frappe.model.set_value(row.doctype, row.name, 'item', record.item_code || '');
+    await frappe.model.set_value(row.doctype, row.name, 'uom', record.uom || '');
+    await frappe.model.set_value(row.doctype, row.name, 'qty', record.pending_qty || '');
+    await frappe.model.set_value(row.doctype, row.name, 'rate', record.rate || '');
+
+    await frappe.model.set_value(row.doctype, row.name, 'unit_rate', record.custom_unit_rate || '');
+    await frappe.model.set_value(row.doctype, row.name, 'discount_percent', record.custom_discount_percent || '');
+    await frappe.model.set_value(row.doctype, row.name, 'poi_name', record.poi_name || '');
+
+    await frappe.model.set_value(row.doctype, row.name, 'po_no', record.name || '');
+
+	console.log("buying_price_list", buying_price_list);
+    await frappe.model.set_value(row.doctype, row.name, 'buying_price_list', record.buying_price_list || '');
+    await frappe.model.set_value(row.doctype, row.name, 'currency', record.currency || '');
+
+    //// tax details
+    await frappe.model.set_value(row.doctype, row.name, 'item_tax_template', record.item_tax_template || '');
+    await frappe.model.set_value(row.doctype, row.name, 'gst_treatment', record.gst_treatment || '');
+
 }
-```

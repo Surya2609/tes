@@ -102,7 +102,34 @@ frappe.ui.form.on('Pick List', {
 
 async function updateKotQty(kot_id) {
     console.log("kot_id", kot_id);
+
     if (kot_id) {
+        // const current = await frappe.db.get_value('KOT Report', kot_id, ['total_picked_qty', 'convertion_factor', 'base_uom', 'so_uom']);
+        // let total_pk_qty = parseFloat(current.message.total_picked_qty || 0); // Keep as number
+        // let c_f = parseFloat(current.message.convertion_factor || 0);
+        // let base_uom = current.message.base_uom;
+        // let so_uom = current.message.so_uom;
+        // let current_pick_qty = parseFloat(qty || 0); // Also number
+
+        // console.log("current_pick_qty", current_pick_qty);
+        // console.log("c_f", c_f);
+        // console.log("base_uom", base_uom);
+        // console.log("so_uom", so_uom);
+        // console.log("total_pk_qty", total_pk_qty);
+
+        // // UOM Conversion
+        // if (so_uom !== base_uom) {
+        //     if (base_uom === "Nos") {
+        //         current_pick_qty = so_uom === "Kg" ? current_pick_qty * c_f : current_pick_qty / c_f;
+        //     } else {
+        //         current_pick_qty = so_uom === "Nos" ? current_pick_qty * c_f : current_pick_qty / c_f;
+        //     }
+        // }
+
+        // let updated_qty = total_pk_qty + current_pick_qty;
+
+        // console.log("Current:", total_pk_qty.toFixed(8), "New:", current_pick_qty.toFixed(8), "Updated:", updated_qty.toFixed(8));
+
         await frappe.call({
             method: 'frappe.client.set_value',
             args: {
