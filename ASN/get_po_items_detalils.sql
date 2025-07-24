@@ -15,14 +15,15 @@ SELECT
     poi.name AS poi_name,
     poi.item_code,
     poi.item_name,
+    poi.conversion_factor,
+    poi.stock_uom,
+    poi.stock_qty,
     poi.gst_hsn_code,
     poi.qty AS po_qty,
     poi.received_qty AS grn_qty,
     (poi.qty - poi.received_qty) AS po_pending_qty,
-    IFNULL(SUM(ascd.qty), 0) AS transit_qty,
-
-    (poi.qty - poi.received_qty - IFNULL(SUM(ascd.qty), 0)) AS pending_qty,
-    
+    IFNULL(SUM(CASE WHEN asnn.completed = 0 THEN ascd.qty ELSE 0 END), 0) AS transit_qty,
+    (poi.qty - poi.received_qty - IFNULL(SUM(CASE WHEN asnn.completed = 0 THEN ascd.qty ELSE 0 END), 0)) AS pending_qty,
     poi.uom,
     poi.rate,
     poi.custom_unit_rate,
@@ -40,6 +41,10 @@ LEFT JOIN
     ON ascd.po_no = po.name 
     AND ascd.item = poi.item_code 
     AND ascd.poi_name = poi.name
+LEFT JOIN 
+    `tabAdvance Shipment Notice` asnn 
+    ON ascd.parent = asnn.name 
+    AND asnn.docstatus = 1
 WHERE
     po.company = %s
     AND po.supplier = %s
@@ -49,5 +54,6 @@ GROUP BY
 HAVING 
     pending_qty > 0
 """, (company, supplier), as_dict=1)
+
 
 frappe.response['message'] = value

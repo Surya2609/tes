@@ -2,6 +2,8 @@ SELECT
     so_summary.company AS `Company`,
     item.item_code AS `Item Code`,
     item.item_name AS `Item Name`,
+    item.custom_verity AS `variety`,
+    item.custom_handler_name AS `Handler`,
     item.gst_hsn_code AS `HSN Code`,
     item.custom_parent_group AS `Parent Group`,
     item.custom_sub_group_1 AS `Sub Group One`,
@@ -100,7 +102,7 @@ LEFT JOIN (
         SUM(asn_child.stock_uom_qty) AS transit_qty
     FROM `tabAdvance Shipment Child` AS asn_child
     JOIN `tabAdvance Shipment Notice` AS asn ON asn.name = asn_child.parent
-    WHERE asn_child.done != 1
+    WHERE asn.completed = 0
     GROUP BY asn_child.item
 ) AS transit_summary ON transit_summary.item = item.item_code
 

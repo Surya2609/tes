@@ -22,6 +22,7 @@ LEFT JOIN
 WHERE
     pr.custom_quality_status = 'Pending'
     AND pr.company = %s
+    AND pr.docstatus = 1
 """, (company_name), as_dict=1)
 
 frappe.response['message'] = valuess

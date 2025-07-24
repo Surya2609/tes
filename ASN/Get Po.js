@@ -169,14 +169,13 @@ function open_purchase_orders(data, frm) {
 
                 let additional_discount_percentage = selectedRows[0].additional_discount_percentage;
                 let discount_amount = selectedRows[0].discount_amount;
-                let disable_rounded_total = selectedRows[0].disable_rounded_total;
                 
                 ////  price 
                 frm.set_value('buying_price_list', price_list);
                 frm.set_value('currency', currency);
 
                 //// taxes and templates
-                 console.log("taxes_and_charges", taxes_and_charges);
+                console.log("taxes_and_charges", taxes_and_charges);
                  console.log("tax_category", tax_category);
                  console.log("apply_discount_on", apply_discount_on);
                  console.log("additional_discount_percentage", additional_discount_percentage);
@@ -191,7 +190,7 @@ function open_purchase_orders(data, frm) {
                 frm.set_value('additional_discount_amount', discount_amount);
 
                 //// round total disable
-                frm.set_value('disable_rounded_total', disable_rounded_total);
+                // frm.set_value('disable_rounded_total', disable_rounded_total);
 
 
                 for (const record of selectedRows) {
@@ -276,13 +275,18 @@ function open_purchase_orders(data, frm) {
 }
 
 async function updateFieldsAsn(row, record) {
-    console.log("gst", record.gst_treatment);
+    
+    console.log("gst recoerd", record); 
     await frappe.model.set_value(row.doctype, row.name, 'item', record.item_code || '');
     await frappe.model.set_value(row.doctype, row.name, 'item_name', record.item_name || '');
     await frappe.model.set_value(row.doctype, row.name, 'uom', record.uom || '');
     await frappe.model.set_value(row.doctype, row.name, 'qty', record.pending_qty || '');
+    await frappe.model.set_value(row.doctype, row.name, 'po_pending_qty', record.pending_qty || '');
     await frappe.model.set_value(row.doctype, row.name, 'rate', record.rate || '');
 
+    await frappe.model.set_value(row.doctype, row.name, 'convertion_factor', record.conversion_factor || '');
+    // await frappe.model.set_value(row.doctype, row.name, 'stock_uom_qty', record.stock_qty || '');
+    await frappe.model.set_value(row.doctype, row.name, 'stock_uom', record.stock_uom || '');
     await frappe.model.set_value(row.doctype, row.name, 'unit_rate', record.custom_unit_rate || '');
     await frappe.model.set_value(row.doctype, row.name, 'discount_percent', record.custom_discount_percent || '');
     await frappe.model.set_value(row.doctype, row.name, 'poi_name', record.poi_name || '');
