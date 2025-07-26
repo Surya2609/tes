@@ -24,7 +24,15 @@
                         }
                     };
                 }
-            }
+            },
+            {
+                fieldname: "stock_status",
+                label: "Stock Status",
+                fieldtype: "Select",
+                options: ["", "Available", "Partial", "None"],
+                default: "",
+                hidden: 1 // hide it since you're controlling it using buttons
+            },
         ],
 
         onload: function(report) {

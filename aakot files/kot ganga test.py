@@ -3,7 +3,8 @@ import frappe
 def execute(filters=None):
     company = filters.get("company")
     warehouse = filters.get("warehouse")
-
+    stock_status = filters.get("stock_status")
+    
     columns = [
         {"label": "Delivery Date", "fieldname": "delivery_date", "fieldtype": "Data", "width": 115},
         # {"label": "ISLOCKED", "fieldname": "is_lock", "fieldtype": "Data", "width": 40},
@@ -321,43 +322,6 @@ def execute(filters=None):
         # ✅ Update KOT qty
         row["action"] = row["action"].replace('data-kot_qty="0"', f'data-kot_qty="{to_pick}"')
 
-
-    # for row in raw_data:
-    #     item = row["item_code"]
-    #     curr_pending = row["dn_current_pending_qty"]
-    #     stock = row["available_stock"]
-    #     platting_stock = row["platting_stock_qty"]
-
-    #     if item not in stock_tracker:
-    #         stock_tracker[item] = stock
-
-    #     if item not in platting_tracker:
-    #         platting_tracker[item] = platting_stock
-
-    #     remaining_stock = stock_tracker[item] 
-    #     remaining_platting = platting_tracker[item]
-
-    #     to_pick = min(curr_pending, remaining_stock)
-    #     row["available_stock"] = remaining_stock
-    #     row["to_pick_qty"] = to_pick
-
-        
-
-    #     stock_tracker[item] -= to_pick
-
-    #     # Determine platting usage: what's still pending after available stock is used
-    #     remaining_pending = curr_pending - to_pick
-    #     from_platting = min(remaining_pending, remaining_platting)
-
-    #     # Reduce platting stock
-    #     platting_tracker[item] -= from_platting
-
-    #     row["action"] = row["action"].replace('data-kot_qty="0"', f'data-kot_qty="{to_pick}"')
-
-
-
-
-
         
         tol_len_items = len(raw_data)
         unique_sales_orders = len(set(row["sales_order"] for row in raw_data))
@@ -427,6 +391,30 @@ def execute(filters=None):
             </div>
         </div>
         """]
+
+
+
+    # ✅ Apply stock_status filtering just before returning
+    stock_status = filters.get("stock_status")
+    if stock_status:
+        filtered_data = []
+        for row in raw_data:
+            to_pick = row.get("to_pick_qty", 0)
+            pending = row.get("dn_current_pending_qty", 0)
+            available = row.get("available_stock", 0)
+            plating = row.get("platting_stock_qty", 0)
+
+            if stock_status == "Available" and to_pick == pending:
+                filtered_data.append(row)
+            elif stock_status == "Partial" and 0 < to_pick < pending:
+                filtered_data.append(row)
+            elif stock_status == "None" and to_pick == 0 and plating == 0:
+                filtered_data.append(row)
+            elif stock_status == "Platting" and to_pick == 0 and plating > 0 and available == 0:
+                filtered_data.append(row)
+
+        raw_data = filtered_data
+        message.append(f"<div style='margin-top:12px; font-size:18px;'>🔍 <b>Filter Applied:</b> {stock_status}</div>")
 
 
     return columns, raw_data, message
