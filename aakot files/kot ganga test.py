@@ -1,10 +1,11 @@
 import frappe
 
 def execute(filters=None):
+    message = None  # ✅ Default value
     company = filters.get("company")
     warehouse = filters.get("warehouse")
     stock_status = filters.get("stock_status")
-    
+
     columns = [
         {"label": "Delivery Date", "fieldname": "delivery_date", "fieldtype": "Data", "width": 115},
         # {"label": "ISLOCKED", "fieldname": "is_lock", "fieldtype": "Data", "width": 40},
