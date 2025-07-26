@@ -34,7 +34,7 @@
                 hidden: 1 // hide it since you're controlling it using buttons
             },
         ],
-
+        
         onload: function(report) {
             report.page.add_inner_button('🟩 Available Stock', function() {
                 report.set_filter_value('stock_status', 'Available');
