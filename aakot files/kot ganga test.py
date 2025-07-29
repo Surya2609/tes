@@ -244,7 +244,7 @@ def execute(filters=None):
         GROUP BY pli.sales_order_item
     ) picked ON picked.so_detail = soi.name
 
-
+    
     LEFT JOIN (
         SELECT 
             dni.so_detail,

@@ -103,7 +103,8 @@ def execute(filters=None):
             ) AS fully_dispatched_lines
         FROM `tabSales Order Item`
         GROUP BY parent
-   ),
+    ),
+
 
     kot_stock AS (
         SELECT
@@ -216,6 +217,8 @@ def execute(filters=None):
     LEFT JOIN item_stock stock ON stock.item_code = soi.item_code
 
     LEFT JOIN tabCustomer cust ON cust.name = so.customer
+
+    LEFT JOIN so_dispatch_status sds ON sds.sales_order = so.name
 
     LEFT JOIN (
         SELECT parent AS item_code, SUM(warehouse_reorder_level) AS rol_qty
