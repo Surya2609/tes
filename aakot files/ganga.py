@@ -337,6 +337,23 @@ def execute(filters=None):
     total_stock_value = frappe.db.sql(stock_value_sql, {"company": company}, as_dict=True)[0]["total_stock_value"] or 0
 
 
+    billed_value_sql = """
+    SELECT 
+        ROUND(SUM(IFNULL(sii.base_net_amount, 0)), 2) AS total_billed_value
+    FROM 
+        `tabSales Invoice` si
+    JOIN 
+        `tabSales Invoice Item` sii ON si.name = sii.parent
+    JOIN 
+        `tabItem` item ON item.name = sii.item_code
+    WHERE
+        si.company = %(company)s
+        AND si.docstatus = 1
+        AND item.custom_store_name = 'Ganga'
+    """
+
+    billed_value = frappe.db.sql(billed_value_sql, {"company": company}, as_dict=True)[0].get("total_billed_value") or 0
+
 
     stock_tracker = {}
     for row in raw_data:
@@ -386,12 +403,19 @@ def execute(filters=None):
 
         message = [f"""
         <!-- First row: summary -->
-        <div style='    
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 12px;
-        '>
+        <div style='display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px;'>
+
+            <!-- Total Stock Value -->
+            <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
+                💰 Total Stock Value: <span style='color:#28a745;'>₹{total_stock_value:,.2f}</span>
+            </div>
+
+            <!-- Total Billed Value -->
+            <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
+                💵 Total Billed Value: <span style='color:#28a745;'>₹{billed_value:,.2f}</span>
+            </div>
+
+            <!-- Other KPIs -->
             <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
                 ✅ Total Items Pending: <span style='color:#c82333;'>00{tol_len_items}</span>
             </div>
@@ -403,10 +427,6 @@ def execute(filters=None):
             </div>
             <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
                 📦 Total Pending Qty: <span style='color:#c82333;'>{total_pending_qty:.2f}</span>
-            </div>
-            </div>
-                <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
-                💰 Total Stock Value: <span style='color:#28a745;'>₹{total_stock_value:,.2f}</span>
             </div>
         </div>
 
