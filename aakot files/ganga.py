@@ -330,7 +330,7 @@ def execute(filters=None):
 
     WHERE
         item.disabled = 0
-        item.custom_store_name = "GANGA"
+        AND item.custom_store_name = "GANGA"
         AND wh.company = %(company)s
         AND bin.actual_qty > 0
     """
@@ -402,73 +402,62 @@ def execute(filters=None):
             elif to_pick == pending:
                 green_count += 1
 
-        message = [f"""
-        <!-- First row: 2-column layout -->
-        <div style='display: flex; gap: 16px; margin-bottom: 12px;'>
-
-            <!-- Left Column: 2 rows -->
-            <div style='flex: 1; display: flex; flex-direction: column; gap: 12px;'>
-
-                <!-- Total Stock Value -->
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px; text-align:center;'>
+            message = [f"""
+            <!-- First Row: 2 columns -->
+            <div style='display: flex; gap: 16px; margin-bottom: 12px;'>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
                     💰 Total Stock Value<br>
                     <span style='color:#28a745;'>₹{total_stock_value:,.2f}</span>
                 </div>
-
-                <!-- Total Billed Value -->
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px; text-align:center;'>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
                     💵 Total Billed Value<br>
                     <span style='color:#28a745;'>₹{billed_value:,.2f}</span>
                 </div>
             </div>
 
-            <!-- Right Column: 4 rows -->
-            <div style='flex: 1; display: flex; flex-direction: column; gap: 12px;'>
-
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px;'>
-                    ✅ Total Items Pending: <span style='color:#c82333;'>00{tol_len_items}</span>
+            <!-- Second Row: 4 columns -->
+            <div style='display: flex; gap: 16px; margin-bottom: 12px;'>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
+                    ✅ Total Items Pending<br><span style='color:#c82333;'>00{tol_len_items}</span>
                 </div>
-
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px;'>
-                    📄 Total SOs Pending: <span style='color:#c82333;'>00{unique_sales_orders}</span>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
+                    📄 Total SOs Pending<br><span style='color:#c82333;'>00{unique_sales_orders}</span>
                 </div>
-
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px;'>
-                    🧑‍🤝‍🧑 Total Customers: <span style='color:#c82333;'>00{unique_customers}</span>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
+                    🧑‍🤝‍🧑 Total Customers<br><span style='color:#c82333;'>00{unique_customers}</span>
                 </div>
-
-                <div style='font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; 
-                            padding:12px; border-radius:8px;'>
-                    📦 Total Pending Qty: <span style='color:#c82333;'>{total_pending_qty:.2f}</span>
+                <div style='flex:1; font-size:22px; font-weight:bold; color:#383d41; 
+                            background-color:#e2e3e5; padding:12px; border-radius:8px; text-align:center;'>
+                    📦 Total Pending Qty<br><span style='color:#c82333;'>{total_pending_qty:.2f}</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Second row: Color-coded stats -->
-        <div style='display: flex; gap: 16px;'>
-            <div style='flex:1; font-size:20px; font-weight:bold; color:#155724; background-color:#d4edda; 
-                        padding:10px; border-radius:8px; text-align:center;'>
-                🟩 Available Stock<br><span style='color:#c82333;'>{green_count}</span>
+            <!-- Third Row: Color-coded stats -->
+            <div style='display: flex; gap: 16px;'>
+                <div style='flex:1; font-size:20px; font-weight:bold; color:#155724; 
+                            background-color:#d4edda; padding:10px; border-radius:8px; text-align:center;'>
+                    🟩 Available Stock<br><span style='color:#c82333;'>{green_count}</span>
+                </div>
+                <div style='flex:1; font-size:20px; font-weight:bold; color:#856404; 
+                            background-color:#fff3cd; padding:10px; border-radius:8px; text-align:center;'>
+                    🟧 Partial Stock<br><span style='color:#c82333;'>{orange_count}</span>
+                </div>
+                <div style='flex:1; font-size:20px; font-weight:bold; color:#721c24; 
+                            background-color:#f8d7da; padding:10px; border-radius:8px; text-align:center;'>
+                    🟥 No Stock<br><span style='color:#c82333;'>{red_count}</span>
+                </div>
+                <div style='flex:1; font-size:20px; font-weight:bold; color:#004085; 
+                            background-color:#cce5ff; padding:10px; border-radius:8px; text-align:center;'>
+                    🔵 Non Moving Stock<br><span style='color:#c82333;'>{blue_count}</span>
+                </div>
             </div>
-            <div style='flex:1; font-size:20px; font-weight:bold; color:#856404; background-color:#fff3cd; 
-                        padding:10px; border-radius:8px; text-align:center;'>
-                🟧 Partial Stock<br><span style='color:#c82333;'>{orange_count}</span>
-            </div>
-            <div style='flex:1; font-size:20px; font-weight:bold; color:#721c24; background-color:#f8d7da; 
-                        padding:10px; border-radius:8px; text-align:center;'>
-                🟥 No Stock<br><span style='color:#c82333;'>{red_count}</span>
-            </div>
-            <div style='flex:1; font-size:20px; font-weight:bold; color:#004085; background-color:#cce5ff; 
-                        padding:10px; border-radius:8px; text-align:center;'>
-                🔵 Non Moving Stock<br><span style='color:#c82333;'>{blue_count}</span>
-            </div>
-        </div>
-        """]
+            """]
+
 
 
 
