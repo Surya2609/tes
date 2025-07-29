@@ -279,6 +279,61 @@ def execute(filters=None):
 
     raw_data = frappe.db.sql(sql, {"company": company, "warehouse": warehouse}, as_dict=True)
 
+    
+        # ✅ Fetch total stock value
+    stock_value_sql = """
+    SELECT 
+        ROUND(
+            SUM(
+                IFNULL(item_price.price_list_rate, 0) * IFNULL(bin.actual_qty, 0)
+            ),
+            2
+        ) AS total_stock_value
+    FROM
+        `tabItem` item
+    LEFT JOIN
+        `tabBin` bin ON bin.item_code = item.item_code
+    LEFT JOIN
+        `tabWarehouse` wh ON wh.name = bin.warehouse
+
+    -- ✅ Company price list
+    LEFT JOIN (
+        SELECT 
+            pl.name AS price_list_name,
+            pl.custom_company
+        FROM 
+            `tabPrice List` pl
+        WHERE 
+            pl.custom_company = %(company)s
+            AND pl.buying = 1
+            AND pl.custom_stock = 1
+            AND pl.enabled = 1
+        LIMIT 1
+    ) AS price_list ON price_list.custom_company = %(company)s
+
+    -- ✅ Item price from selected price list
+    LEFT JOIN (
+        SELECT 
+            ip.item_code,
+            ip.price_list,
+            ip.price_list_rate
+        FROM 
+            `tabItem Price` ip
+        WHERE 
+            ip.buying = 1
+    ) AS item_price ON 
+        item_price.item_code = item.item_code
+        AND item_price.price_list = price_list.price_list_name
+
+    WHERE
+        item.disabled = 0
+        AND wh.company = %(company)s
+        AND bin.actual_qty > 0
+    """
+
+    total_stock_value = frappe.db.sql(stock_value_sql, {"company": company}, as_dict=True)[0]["total_stock_value"] or 0
+
+
 
     stock_tracker = {}
     for row in raw_data:
@@ -345,6 +400,10 @@ def execute(filters=None):
             </div>
             <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
                 📦 Total Pending Qty: <span style='color:#c82333;'>{total_pending_qty:.2f}</span>
+            </div>
+            </div>
+                <div style='flex: 1; font-size:22px; font-weight:bold; color:#383d41; background-color:#e2e3e5; padding:12px; border-radius:8px; min-width:200px;'>
+                💰 Total Stock Value: <span style='color:#28a745;'>₹{total_stock_value:,.2f}</span>
             </div>
         </div>
 
