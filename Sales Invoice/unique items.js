@@ -29,7 +29,9 @@ function generateUniqueItems(frm) {
         frm.doc.items.forEach(item => {
             let code = item.item_code;
             let unit_rate = item.custom_unit_rate;
-            let key = `${code}_${unit_rate}`; // group only if unit_rate also matches
+            let customer_part_code = item.custom_customer_part_code;
+            let key = `${code}_${unit_rate}_${customer_part_code}`;
+            // let key = `${code}_${unit_rate}`; // group only if unit_rate also matches
 
             if (unique_items[key]) {
                 unique_items[key].igst_amount += parseFloat(item.igst_amount) || 0;
@@ -72,10 +74,9 @@ function generateUniqueItems(frm) {
                     cgst_amount: parseFloat(item.cgst_amount) || 0,
                     sgst_amount: parseFloat(item.sgst_amount) || 0,
 
-                    sales_order: item.sales_order || '',
                     batch_nos: item.batch_no || '',
                     warehouses: item.warehouse || '',
-                    // so_name: item.sales_order || ''
+                    sales_order: item.sales_order || '',
                 };
             }
         });
@@ -85,6 +86,61 @@ function generateUniqueItems(frm) {
     });
 }
 
+
+//   function generateUniqueItems(frm) {
+//       return new Promise((resolve) => {
+//           let unique_items = {};
+//           frm.doc.items.forEach(item => {
+//               let code = item.item_code;
+//               if (unique_items[code]) {
+
+//                 unique_items[code].igst_amount += parseFloat(item.igst_amount) || 0;
+//                 unique_items[code].cgst_amount += parseFloat(item.cgst_amount) || 0;
+//                 unique_items[code].sgst_amount += parseFloat(item.sgst_amount) || 0;
+
+//                 unique_items[code].amount += parseFloat(item.amount) || 0;
+//                   unique_items[code].qty += parseFloat(item.qty) || 0;
+
+//                   if (item.batch_no && !unique_items[code].batch_nos.split(', ').includes(item.batch_no)) {
+//                       unique_items[code].batch_nos += `, ${item.batch_no}`;
+//                   }
+
+//                   if (item.warehouse && !unique_items[code].warehouses.split(', ').includes(item.warehouse)) {
+//                       unique_items[code].warehouses += `, ${item.warehouse}`;
+//                   }
+
+//               } else {
+//                   unique_items[code] = {
+//                       item_code: item.item_code,
+//                       item_name: item.item_name,
+//                       description: item.description,
+//                       customer_part_code: item.custom_customer_part_code,
+//                       customer_discription: item.custom_customer_description,
+//                       uom: item.uom,
+//                       qty: parseFloat(item.qty) || 0,
+//                       rate: item.rate || 0,
+//                       unit_rate: item.custom_unit_rate || 0,
+//                       amount: item.amount,
+//                       hsn_code: item.gst_hsn_code,
+//                       igst_rate: item.igst_rate,
+//                       cgst_rate: item.cgst_rate,
+//                       sgst_rate: item.sgst_rate,
+
+//                       igst_amount: item.igst_amount,
+//                       cgst_amount: item.cgst_amount,
+//                       sgst_amount: item.sgst_amount,
+
+//                       batch_nos: item.batch_no || '',
+//                       warehouses: item.warehouse || '',
+//                       so_name: item.sales_order || ''
+//                   };
+//               }
+//           });
+//           let result_list = Object.values(unique_items);
+
+//           addChildTable(frm, result_list).then(resolve); // resolve when done
+//       });
+//   }
 
 function addChildTable(frm, result_list) {
     console.log("result_list", result_list);
@@ -156,3 +212,4 @@ function generateRandomID(length = 10) {
     }
     return result;
 }
+
